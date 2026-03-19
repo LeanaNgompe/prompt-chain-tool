@@ -102,18 +102,22 @@ export default function FlavorDetailsPage({ params }: { params: Promise<{ id: st
     const currentStep = newSteps[index]
     const otherStep = newSteps[otherIndex]
 
-    // Swap order_by values
-    const { error: error1 } = await supabase
-      .from('humor_flavor_steps')
-      .update({ order_by: otherStep.order_by })
-      .eq('id', currentStep.id)
-    const { error: error2 } = await supabase
-      .from('humor_flavor_steps')
-      .update({ order_by: currentStep.order_by })
-      .eq('id', otherStep.id)
+    // Use a temporary value to avoid unique constraint violations during swap
+    // We'll use a very large value that shouldn't exist
+    const tempOrder = -1 // Assuming order_by is usually positive
 
-    if (error1 || error2) alert('Error reordering steps')
-    else fetchData()
+    try {
+      // 1. Set current to temp
+      await supabase.from('humor_flavor_steps').update({ order_by: tempOrder }).eq('id', currentStep.id)
+      // 2. Set other to current's old order
+      await supabase.from('humor_flavor_steps').update({ order_by: currentStep.order_by }).eq('id', otherStep.id)
+      // 3. Set current to other's old order
+      await supabase.from('humor_flavor_steps').update({ order_by: otherStep.order_by }).eq('id', currentStep.id)
+      
+      fetchData()
+    } catch (err) {
+      alert('Error reordering steps')
+    }
   }
 
   const openEditModal = (step: HumorFlavorStep) => {
