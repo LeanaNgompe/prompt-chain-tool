@@ -18,7 +18,7 @@ export default function TestToolPage() {
 
   useEffect(() => {
     const fetchFlavors = async () => {
-      const { data } = await supabase.from('humor_flavors').select('*').order('slug')
+      const { data } = await (supabase.from('humor_flavors') as any).select('*').order('slug')
       if (data) {
         setFlavors(data)
         if (data.length > 0) setSelectedFlavorId(data[0].id.toString())

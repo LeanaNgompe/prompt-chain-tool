@@ -49,8 +49,7 @@ export default function FlavorDetailsPage({ params }: { params: Promise<{ id: st
   const handleCreateOrUpdateStep = async (e: React.FormEvent) => {
     e.preventDefault()
     if (editingStep) {
-      const { error } = await supabase
-        .from('humor_flavor_steps')
+      const { error } = await (supabase.from('humor_flavor_steps') as any)
         .update({
           description: newStep.description,
           llm_system_prompt: newStep.llm_system_prompt,
@@ -60,7 +59,7 @@ export default function FlavorDetailsPage({ params }: { params: Promise<{ id: st
           llm_input_type_id: newStep.llm_input_type_id,
           llm_output_type_id: newStep.llm_output_type_id,
           humor_flavor_step_type_id: newStep.humor_flavor_step_type_id,
-        } as any)
+        })
         .eq('id', editingStep.id)
       if (error) alert(error.message)
       else {
@@ -70,12 +69,12 @@ export default function FlavorDetailsPage({ params }: { params: Promise<{ id: st
       }
     } else {
       const nextOrder = steps.length > 0 ? Math.max(...steps.map((s) => s.order_by)) + 1 : 1
-      const { error } = await supabase.from('humor_flavor_steps').insert([
+      const { error } = await (supabase.from('humor_flavor_steps') as any).insert([
         {
           ...newStep,
           humor_flavor_id: parseInt(id),
           order_by: nextOrder,
-        } as any,
+        },
       ])
       if (error) alert(error.message)
       else {
@@ -87,7 +86,7 @@ export default function FlavorDetailsPage({ params }: { params: Promise<{ id: st
 
   const handleDeleteStep = async (stepId: number) => {
     if (confirm('Delete this step?')) {
-      const { error } = await supabase.from('humor_flavor_steps').delete().eq('id', stepId)
+      const { error } = await (supabase.from('humor_flavor_steps') as any).delete().eq('id', stepId)
       if (error) alert(error.message)
       else fetchData()
     }
@@ -108,11 +107,11 @@ export default function FlavorDetailsPage({ params }: { params: Promise<{ id: st
 
     try {
       // 1. Set current to temp
-      await supabase.from('humor_flavor_steps').update({ order_by: tempOrder } as any).eq('id', currentStep.id)
+      await (supabase.from('humor_flavor_steps') as any).update({ order_by: tempOrder }).eq('id', currentStep.id)
       // 2. Set other to current's old order
-      await supabase.from('humor_flavor_steps').update({ order_by: currentStep.order_by } as any).eq('id', otherStep.id)
+      await (supabase.from('humor_flavor_steps') as any).update({ order_by: currentStep.order_by }).eq('id', otherStep.id)
       // 3. Set current to other's old order
-      await supabase.from('humor_flavor_steps').update({ order_by: otherStep.order_by } as any).eq('id', currentStep.id)
+      await (supabase.from('humor_flavor_steps') as any).update({ order_by: otherStep.order_by }).eq('id', currentStep.id)
       
       fetchData()
     } catch (err) {

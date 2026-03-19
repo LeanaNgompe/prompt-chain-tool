@@ -34,8 +34,7 @@ export default function FlavorsPage() {
   const handleCreateOrUpdate = async (e: React.FormEvent) => {
     e.preventDefault()
     if (editingFlavor) {
-      const { error } = await supabase
-        .from('humor_flavors')
+      const { error } = await (supabase.from('humor_flavors') as any)
         .update({ slug: newFlavor.slug, description: newFlavor.description })
         .eq('id', editingFlavor.id)
       if (error) alert(error.message)
@@ -46,8 +45,7 @@ export default function FlavorsPage() {
         fetchFlavors()
       }
     } else {
-      const { error } = await supabase
-        .from('humor_flavors')
+      const { error } = await (supabase.from('humor_flavors') as any)
         .insert([{ slug: newFlavor.slug, description: newFlavor.description }])
       if (error) alert(error.message)
       else {
@@ -60,7 +58,7 @@ export default function FlavorsPage() {
 
   const handleDelete = async (id: number) => {
     if (confirm('Are you sure you want to delete this flavor? All associated steps will be deleted if there are foreign key constraints.')) {
-      const { error } = await supabase.from('humor_flavors').delete().eq('id', id)
+      const { error } = await (supabase.from('humor_flavors') as any).delete().eq('id', id)
       if (error) alert(error.message)
       else fetchFlavors()
     }
