@@ -30,11 +30,11 @@ export default function FlavorDetailsPage({ params }: { params: Promise<{ id: st
 
   const fetchData = async () => {
     setLoading(true)
-    const { data: flavorData } = await supabase.from('humor_flavors').select('*').eq('id', id).single()
+    const { data: flavorData } = await supabase.from('humor_flavors').select('*').eq('id', parseInt(id)).single()
     const { data: stepsData } = await supabase
       .from('humor_flavor_steps')
       .select('*')
-      .eq('humor_flavor_id', id)
+      .eq('humor_flavor_id', parseInt(id))
       .order('order_by', { ascending: true })
 
     setFlavor(flavorData)
@@ -60,7 +60,7 @@ export default function FlavorDetailsPage({ params }: { params: Promise<{ id: st
           llm_input_type_id: newStep.llm_input_type_id,
           llm_output_type_id: newStep.llm_output_type_id,
           humor_flavor_step_type_id: newStep.humor_flavor_step_type_id,
-        })
+        } as any)
         .eq('id', editingStep.id)
       if (error) alert(error.message)
       else {
@@ -108,11 +108,11 @@ export default function FlavorDetailsPage({ params }: { params: Promise<{ id: st
 
     try {
       // 1. Set current to temp
-      await supabase.from('humor_flavor_steps').update({ order_by: tempOrder }).eq('id', currentStep.id)
+      await supabase.from('humor_flavor_steps').update({ order_by: tempOrder } as any).eq('id', currentStep.id)
       // 2. Set other to current's old order
-      await supabase.from('humor_flavor_steps').update({ order_by: currentStep.order_by }).eq('id', otherStep.id)
+      await supabase.from('humor_flavor_steps').update({ order_by: currentStep.order_by } as any).eq('id', otherStep.id)
       // 3. Set current to other's old order
-      await supabase.from('humor_flavor_steps').update({ order_by: otherStep.order_by }).eq('id', currentStep.id)
+      await supabase.from('humor_flavor_steps').update({ order_by: otherStep.order_by } as any).eq('id', currentStep.id)
       
       fetchData()
     } catch (err) {
