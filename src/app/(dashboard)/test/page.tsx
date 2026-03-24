@@ -12,8 +12,9 @@ export default function TestToolPage() {
   const [selectedFlavorId, setSelectedFlavorId] = useState<string>('')
   const [imageId, setImageId] = useState<string>('')
   const [loading, setLoading] = useState(false)
-  const [results, setResults] = useState<unknown>(null)
+  const [results, setResults] = useState<string[] | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
 
   useEffect(() => {
     const fetchFlavors = async () => {
@@ -84,6 +85,28 @@ export default function TestToolPage() {
     return captionRes.json()
   }
 
+  const extractCaptions = (data: unknown): string[] => {
+    if (!data || typeof data !== 'object') return []
+    const payload = data as {
+      captions?: unknown
+      caption?: unknown
+      text?: unknown
+      output?: unknown
+    }
+
+    const raw = payload.captions ?? payload.caption ?? payload.text ?? payload.output
+    if (Array.isArray(raw)) {
+      return raw.map((item) => String(item)).filter(Boolean)
+    }
+    if (typeof raw === 'string') {
+      return raw
+        .split('\n')
+        .map((line) => line.trim())
+        .filter(Boolean)
+    }
+    return []
+  }
+
   const handleGenerate = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
@@ -94,9 +117,16 @@ export default function TestToolPage() {
       if (!imageId) {
         throw new Error('Please provide an image ID')
       }
+      if (!UUID_REGEX.test(imageId.trim())) {
+        throw new Error('Image ID must be a valid UUID from your uploaded/registered image record')
+      }
 
-      const data = await generateFromImageId(imageId, selectedFlavorId)
-      setResults(data)
+      const data = await generateFromImageId(imageId.trim(), selectedFlavorId)
+      const captions = extractCaptions(data)
+      if (captions.length === 0) {
+        throw new Error('No captions were returned by the generation pipeline')
+      }
+      setResults(captions)
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Something went wrong')
     } finally {
@@ -170,11 +200,13 @@ export default function TestToolPage() {
 
         {results !== null && (
           <div className="mt-8 space-y-4">
-            <h2 className="text-xl font-medium text-gray-900 dark:text-white">Generated Results</h2>
+            <h2 className="text-xl font-medium text-gray-900 dark:text-white">Generated Captions</h2>
             <div className="rounded-lg bg-gray-50 dark:bg-gray-900 p-6 border border-gray-200 dark:border-gray-700">
-              <pre className="text-sm text-gray-700 dark:text-gray-300 overflow-auto whitespace-pre-wrap">
-                {JSON.stringify(results, null, 2)}
-              </pre>
+              <ul className="list-disc pl-5 space-y-2 text-sm text-gray-700 dark:text-gray-300">
+                {results.map((caption, index) => (
+                  <li key={`${index}-${caption}`}>{caption}</li>
+                ))}
+              </ul>
             </div>
           </div>
         )}
