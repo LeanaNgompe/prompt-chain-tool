@@ -257,13 +257,11 @@ async function handleGenerateCaptions(body: unknown, request: Request) {
       {
         humor_flavor_id: humorFlavorId,
         humor_flavor_step_id: stepRow.id,
-        order_by: stepRow.order_by,
         llm_system_prompt: stepRow.llm_system_prompt,
         llm_user_prompt: composedUserPrompt,
         llm_model_id: stepRow.llm_model_id,
         llm_temperature: stepRow.llm_temperature,
-        input_text: stepInput,
-        output_text: stepOutput,
+        llm_model_response: stepOutput,
       },
     ])
 
@@ -283,9 +281,7 @@ async function handleGenerateCaptions(body: unknown, request: Request) {
     {
       humor_flavor_id: humorFlavorId,
       image_id: imageId,
-      image_url: payload.imageUrl ?? payload.image ?? null,
-      text: finalOutput,
-      raw_output: finalOutput,
+      content: finalOutput,
     },
   ])
 
