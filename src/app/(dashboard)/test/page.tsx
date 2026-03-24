@@ -10,7 +10,7 @@ type HumorFlavor = Database['public']['Tables']['humor_flavors']['Row']
 export default function TestToolPage() {
   const [flavors, setFlavors] = useState<HumorFlavor[]>([])
   const [selectedFlavorId, setSelectedFlavorId] = useState<string>('')
-  const [selectedFile, setSelectedFile] = useState<File | null>(null)
+  const [imageUrl, setImageUrl] = useState<string>('')
   const [loading, setLoading] = useState(false)
   const [results, setResults] = useState<unknown>(null)
   const [error, setError] = useState<string | null>(null)
@@ -68,68 +68,13 @@ export default function TestToolPage() {
     }
   }
 
-  const getUploadErrorMessage = async (response: Response, fallback: string) => {
-    const bodyText = await response.text()
-    if (!bodyText) return `${fallback} (${response.status})`
-    return `${fallback}: ${bodyText.slice(0, 400)}`
-  }
-
-  const uploadImageAndGenerate = async (file: File, flavorId: string) => {
+  const generateFromImageUrl = async (url: string, flavorId: string) => {
     const authHeaders = await getAuthHeaders()
-
-    const presignRes = await fetch('/api/pipeline?step=generate-url', {
-      method: 'POST',
-      headers: authHeaders,
-      body: JSON.stringify({ contentType: file.type }),
-    })
-
-    if (!presignRes.ok) {
-      throw new Error(await getErrorMessage(presignRes, 'Failed to generate upload URL'))
-    }
-
-    const presignData = await presignRes.json()
-    const uploadUrl = presignData.uploadUrl || presignData.url
-    const cdnUrl = presignData.cdnUrl || presignData.publicUrl
-
-    if (!uploadUrl) {
-      throw new Error('Upload URL missing from response')
-    }
-
-    const s3UploadRes = await fetch(uploadUrl, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': file.type,
-      },
-      body: file,
-    })
-
-    if (!s3UploadRes.ok) {
-      throw new Error(await getUploadErrorMessage(s3UploadRes, 'Image upload failed'))
-    }
-
-    const registerRes = await fetch('/api/pipeline?step=register', {
-      method: 'POST',
-      headers: authHeaders,
-      body: JSON.stringify({
-        imageUrl: cdnUrl || uploadUrl.split('?')[0],
-        isCommonUse: false,
-      }),
-    })
-
-    if (!registerRes.ok) {
-      throw new Error(await getErrorMessage(registerRes, 'Failed to register image'))
-    }
-
-    const registerData = await registerRes.json()
-    const imageId = registerData.imageId || registerData.id || registerData.image?.id
-    if (!imageId) {
-      throw new Error('Image ID missing from registration response')
-    }
 
     const captionRes = await fetch('/api/pipeline?step=generate-captions', {
       method: 'POST',
       headers: authHeaders,
-      body: JSON.stringify({ imageId, humor_flavor_id: Number(flavorId) }),
+      body: JSON.stringify({ imageUrl: url, humor_flavor_id: Number(flavorId) }),
     })
 
     if (!captionRes.ok) {
@@ -146,11 +91,11 @@ export default function TestToolPage() {
     setError(null)
 
     try {
-      if (!selectedFile) {
-        throw new Error('Please select an image file')
+      if (!imageUrl) {
+        throw new Error('Please provide an image URL')
       }
 
-      const data = await uploadImageAndGenerate(selectedFile, selectedFlavorId)
+      const data = await generateFromImageUrl(imageUrl, selectedFlavorId)
       setResults(data)
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Something went wrong')
@@ -187,22 +132,23 @@ export default function TestToolPage() {
           </div>
 
           <div>
-            <label htmlFor="imageFile" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-              Image File
+            <label htmlFor="imageUrl" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              Image URL
             </label>
             <input
-              type="file"
-              id="imageFile"
-              accept="image/*"
+              type="url"
+              id="imageUrl"
               required
-              onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
+              placeholder="https://example.com/image.jpg"
+              value={imageUrl}
+              onChange={(e) => setImageUrl(e.target.value)}
               className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
             />
           </div>
 
           <button
             type="submit"
-            disabled={loading || !selectedFile || !selectedFlavorId}
+            disabled={loading || !imageUrl || !selectedFlavorId}
             className="flex w-full justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50"
           >
             {loading ? (
