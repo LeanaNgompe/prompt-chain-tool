@@ -15,6 +15,7 @@ export default function FlavorsPage() {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [editingFlavor, setEditingFlavor] = useState<HumorFlavor | null>(null)
   const [newFlavor, setNewFlavor] = useState({ slug: '', description: '' })
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   const fetchFlavors = async () => {
     setLoading(true)
@@ -33,26 +34,33 @@ export default function FlavorsPage() {
 
   const handleCreateOrUpdate = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (editingFlavor) {
-      const { error } = await (supabase.from('humor_flavors') as any)
-        .update({ slug: newFlavor.slug, description: newFlavor.description })
-        .eq('id', editingFlavor.id)
-      if (error) alert(error.message)
-      else {
-        setIsModalOpen(false)
-        setEditingFlavor(null)
-        setNewFlavor({ slug: '', description: '' })
-        fetchFlavors()
+    if (isSubmitting) return
+    setIsSubmitting(true)
+
+    try {
+      if (editingFlavor) {
+        const { error } = await (supabase.from('humor_flavors') as any)
+          .update({ slug: newFlavor.slug, description: newFlavor.description })
+          .eq('id', editingFlavor.id)
+        if (error) alert(error.message)
+        else {
+          setIsModalOpen(false)
+          setEditingFlavor(null)
+          setNewFlavor({ slug: '', description: '' })
+          fetchFlavors()
+        }
+      } else {
+        const { error } = await (supabase.from('humor_flavors') as any)
+          .insert([{ slug: newFlavor.slug, description: newFlavor.description }])
+        if (error) alert(error.message)
+        else {
+          setIsModalOpen(false)
+          setNewFlavor({ slug: '', description: '' })
+          fetchFlavors()
+        }
       }
-    } else {
-      const { error } = await (supabase.from('humor_flavors') as any)
-        .insert([{ slug: newFlavor.slug, description: newFlavor.description }])
-      if (error) alert(error.message)
-      else {
-        setIsModalOpen(false)
-        setNewFlavor({ slug: '', description: '' })
-        fetchFlavors()
-      }
+    } finally {
+      setIsSubmitting(false)
     }
   }
 

@@ -27,6 +27,7 @@ export default function FlavorDetailsPage({ params }: { params: Promise<{ id: st
     llm_output_type_id: 1,
     humor_flavor_step_type_id: 1,
   })
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   const fetchData = async () => {
     setLoading(true)
@@ -48,39 +49,48 @@ export default function FlavorDetailsPage({ params }: { params: Promise<{ id: st
 
   const handleCreateOrUpdateStep = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (editingStep) {
-      const { error } = await (supabase.from('humor_flavor_steps') as any)
-        .update({
-          description: newStep.description,
-          llm_system_prompt: newStep.llm_system_prompt,
-          llm_user_prompt: newStep.llm_user_prompt,
-          llm_temperature: newStep.llm_temperature,
-          llm_model_id: newStep.llm_model_id,
-          llm_input_type_id: newStep.llm_input_type_id,
-          llm_output_type_id: newStep.llm_output_type_id,
-          humor_flavor_step_type_id: newStep.humor_flavor_step_type_id,
-        })
-        .eq('id', editingStep.id)
-      if (error) alert(error.message)
-      else {
-        setIsModalOpen(false)
-        setEditingStep(null)
-        fetchData()
+    if (isSubmitting) return
+    setIsSubmitting(true)
+
+    try {
+      if (editingStep) {
+        const { error } = await (supabase.from('humor_flavor_steps') as any)
+          .update({
+            description: newStep.description,
+            llm_system_prompt: newStep.llm_system_prompt,
+            llm_user_prompt: newStep.llm_user_prompt,
+            llm_temperature: newStep.llm_temperature,
+            llm_model_id: newStep.llm_model_id,
+            llm_input_type_id: newStep.llm_input_type_id,
+            llm_output_type_id: newStep.llm_output_type_id,
+            humor_flavor_step_type_id: newStep.humor_flavor_step_type_id,
+          })
+          .eq('id', editingStep.id)
+        if (error) alert(error.message)
+        else {
+          setIsModalOpen(false)
+          setEditingStep(null)
+          fetchData()
+        }
+      } else {
+        const nextOrder = steps.length > 0 ? Math.max(...steps.map((s) => s.order_by)) + 1 : 1
+        // Ensure we don't send an id during insert
+        const { id: _unusedId, ...stepDataWithoutId } = newStep as any
+        const { error } = await (supabase.from('humor_flavor_steps') as any).insert([
+          {
+            ...stepDataWithoutId,
+            humor_flavor_id: parseInt(id),
+            order_by: nextOrder,
+          },
+        ])
+        if (error) alert(error.message)
+        else {
+          setIsModalOpen(false)
+          fetchData()
+        }
       }
-    } else {
-      const nextOrder = steps.length > 0 ? Math.max(...steps.map((s) => s.order_by)) + 1 : 1
-      const { error } = await (supabase.from('humor_flavor_steps') as any).insert([
-        {
-          ...newStep,
-          humor_flavor_id: parseInt(id),
-          order_by: nextOrder,
-        },
-      ])
-      if (error) alert(error.message)
-      else {
-        setIsModalOpen(false)
-        fetchData()
-      }
+    } finally {
+      setIsSubmitting(false)
     }
   }
 
@@ -102,15 +112,11 @@ export default function FlavorDetailsPage({ params }: { params: Promise<{ id: st
     const otherStep = newSteps[otherIndex]
 
     // Use a temporary value to avoid unique constraint violations during swap
-    // We'll use a very large value that shouldn't exist
-    const tempOrder = -1 // Assuming order_by is usually positive
+    const tempOrder = -1 
 
     try {
-      // 1. Set current to temp
       await (supabase.from('humor_flavor_steps') as any).update({ order_by: tempOrder }).eq('id', currentStep.id)
-      // 2. Set other to current's old order
       await (supabase.from('humor_flavor_steps') as any).update({ order_by: currentStep.order_by }).eq('id', otherStep.id)
-      // 3. Set current to other's old order
       await (supabase.from('humor_flavor_steps') as any).update({ order_by: otherStep.order_by }).eq('id', currentStep.id)
       
       fetchData()
@@ -218,10 +224,13 @@ export default function FlavorDetailsPage({ params }: { params: Promise<{ id: st
       </div>
 
       {isModalOpen && (
-        <div className="fixed inset-0 z-10 overflow-y-auto">
+        <div className="fixed inset-0 z-50 overflow-y-auto">
           <div className="flex min-h-screen items-center justify-center p-4">
-            <div className="fixed inset-0 bg-gray-500 opacity-75" onClick={() => setIsModalOpen(false)}></div>
-            <div className="relative w-full max-w-2xl transform overflow-hidden rounded-lg bg-white dark:bg-gray-800 p-6 shadow-xl">
+            <div 
+              className="fixed inset-0 bg-gray-500/75 transition-opacity" 
+              onClick={() => setIsModalOpen(false)}
+            ></div>
+            <div className="relative w-full max-w-2xl transform overflow-hidden rounded-lg bg-white dark:bg-gray-800 p-6 shadow-xl transition-all">
               <h3 className="text-lg font-medium text-gray-900 dark:text-white">
                 {editingStep ? 'Edit Step' : 'New Step'}
               </h3>
@@ -285,9 +294,10 @@ export default function FlavorDetailsPage({ params }: { params: Promise<{ id: st
                   </button>
                   <button
                     type="submit"
-                    className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700"
+                    disabled={isSubmitting}
+                    className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
                   >
-                    {editingStep ? 'Update' : 'Create'}
+                    {isSubmitting ? 'Saving...' : (editingStep ? 'Update' : 'Create')}
                   </button>
                 </div>
               </form>
