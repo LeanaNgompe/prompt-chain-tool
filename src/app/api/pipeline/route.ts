@@ -201,6 +201,11 @@ async function handleGenerateCaptions(body: unknown, request: Request) {
     return NextResponse.json({ error: true, message: 'imageId must be a valid UUID.' }, { status: 400 })
   }
 
+  const { data: userData } = await supabase.auth.getUser()
+  const profileId = userData.user?.id
+
+  const captionRequestId = Number(payload.caption_request_id ?? payload.requestId ?? 0)
+
   for (const [idx, stepRow] of steps.entries()) {
     const composedUserPrompt =
       idx === 0
@@ -219,6 +224,7 @@ async function handleGenerateCaptions(body: unknown, request: Request) {
       input: stepInput,
     }
 
+    const startTime = Date.now()
     const stepRes = await fetch(`${API_BASE_URL}/pipeline/generate-captions`, {
       method: 'POST',
       headers: {
@@ -230,6 +236,8 @@ async function handleGenerateCaptions(body: unknown, request: Request) {
     })
 
     const stepText = await stepRes.text()
+    const durationSeconds = Math.max(1, Math.round((Date.now() - startTime) / 1000))
+
     if (!stepRes.ok) {
       return NextResponse.json(
         {
@@ -259,9 +267,12 @@ async function handleGenerateCaptions(body: unknown, request: Request) {
         humor_flavor_step_id: stepRow.id,
         llm_system_prompt: stepRow.llm_system_prompt,
         llm_user_prompt: composedUserPrompt,
-        llm_model_id: stepRow.llm_model_id,
+        llm_model_id: stepRow.llm_model_id ?? 1,
         llm_temperature: stepRow.llm_temperature,
         llm_model_response: stepOutput,
+        processing_time_seconds: durationSeconds,
+        profile_id: profileId,
+        caption_request_id: captionRequestId,
       },
     ])
 
@@ -282,6 +293,9 @@ async function handleGenerateCaptions(body: unknown, request: Request) {
       humor_flavor_id: humorFlavorId,
       image_id: imageId,
       content: finalOutput,
+      profile_id: profileId,
+      caption_request_id: captionRequestId,
+      is_public: true,
     },
   ])
 
