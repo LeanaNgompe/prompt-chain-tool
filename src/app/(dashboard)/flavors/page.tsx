@@ -60,6 +60,7 @@ export default function FlavorsPage() {
         } else if (data && data[0]) {
           const createdFlavor = data[0]
           // Create initial mandatory step
+          // We explicitly omit 'id' to let Postgres generate it
           const { error: stepError } = await (supabase.from('humor_flavor_steps') as any)
             .insert([{
               humor_flavor_id: createdFlavor.id,
@@ -75,8 +76,36 @@ export default function FlavorsPage() {
             }])
 
           if (stepError) {
+            // If it fails with a duplicate key, it's likely a sequence sync issue in the DB.
+            // We'll try one more time as many sequence issues advance on each call.
+            if (stepError.message.includes('unique constraint "humor_flavor_steps_pkey"')) {
+               const { error: retryError } = await (supabase.from('humor_flavor_steps') as any)
+                .insert([{
+                  humor_flavor_id: createdFlavor.id,
+                  order_by: 1,
+                  description: 'Initial Generation',
+                  llm_system_prompt: 'You are a helpful assistant.',
+                  llm_user_prompt: 'Generate a response based on the input.',
+                  llm_temperature: 0.7,
+                  llm_model_id: 1,
+                  llm_input_type_id: 1,
+                  llm_output_type_id: 1,
+                  humor_flavor_step_type_id: 1
+                }])
+               
+               if (!retryError) {
+                  setIsModalOpen(false)
+                  setNewFlavor({ slug: '', description: '' })
+                  fetchFlavors()
+                  setIsSubmitting(false)
+                  return
+               }
+            }
+
             alert(`Flavor created but failed to create initial step: ${stepError.message}. Rolling back.`)
             // Rollback flavor creation if step creation fails
+            // Ensure we delete any orphaned steps that might have actually been created (unlikely on error but safe)
+            await (supabase.from('humor_flavor_steps') as any).delete().eq('humor_flavor_id', createdFlavor.id)
             await (supabase.from('humor_flavors') as any).delete().eq('id', createdFlavor.id)
           } else {
             setIsModalOpen(false)
