@@ -50,13 +50,39 @@ export default function FlavorsPage() {
           fetchFlavors()
         }
       } else {
-        const { error } = await (supabase.from('humor_flavors') as any)
+        // Create flavor
+        const { data, error } = await (supabase.from('humor_flavors') as any)
           .insert([{ slug: newFlavor.slug, description: newFlavor.description }])
-        if (error) alert(error.message)
-        else {
-          setIsModalOpen(false)
-          setNewFlavor({ slug: '', description: '' })
-          fetchFlavors()
+          .select()
+        
+        if (error) {
+          alert(error.message)
+        } else if (data && data[0]) {
+          const createdFlavor = data[0]
+          // Create initial mandatory step
+          const { error: stepError } = await (supabase.from('humor_flavor_steps') as any)
+            .insert([{
+              humor_flavor_id: createdFlavor.id,
+              order_by: 1,
+              description: 'Initial Generation',
+              llm_system_prompt: 'You are a helpful assistant.',
+              llm_user_prompt: 'Generate a response based on the input.',
+              llm_temperature: 0.7,
+              llm_model_id: 1,
+              llm_input_type_id: 1,
+              llm_output_type_id: 1,
+              humor_flavor_step_type_id: 1
+            }])
+
+          if (stepError) {
+            alert(`Flavor created but failed to create initial step: ${stepError.message}. Rolling back.`)
+            // Rollback flavor creation if step creation fails
+            await (supabase.from('humor_flavors') as any).delete().eq('id', createdFlavor.id)
+          } else {
+            setIsModalOpen(false)
+            setNewFlavor({ slug: '', description: '' })
+            fetchFlavors()
+          }
         }
       }
     } finally {
@@ -65,7 +91,18 @@ export default function FlavorsPage() {
   }
 
   const handleDelete = async (id: number) => {
-    if (confirm('Are you sure you want to delete this flavor? All associated steps will be deleted if there are foreign key constraints.')) {
+    if (confirm('Are you sure you want to delete this flavor? All associated steps will be deleted.')) {
+      // Rule: First delete all associated steps
+      const { error: stepsError } = await (supabase.from('humor_flavor_steps') as any)
+        .delete()
+        .eq('humor_flavor_id', id)
+      
+      if (stepsError) {
+        alert(`Failed to delete steps: ${stepsError.message}`)
+        return
+      }
+
+      // Then delete the flavor
       const { error } = await (supabase.from('humor_flavors') as any).delete().eq('id', id)
       if (error) alert(error.message)
       else fetchFlavors()

@@ -95,10 +95,30 @@ export default function FlavorDetailsPage({ params }: { params: Promise<{ id: st
   }
 
   const handleDeleteStep = async (stepId: number) => {
+    // Rule: NEVER delete the last remaining step of a flavor
+    if (steps.length <= 1) {
+      alert('A flavor must have at least one step. Operation blocked.')
+      return
+    }
+
     if (confirm('Delete this step?')) {
       const { error } = await (supabase.from('humor_flavor_steps') as any).delete().eq('id', stepId)
-      if (error) alert(error.message)
-      else fetchData()
+      if (error) {
+        alert(error.message)
+      } else {
+        // Rule: ALWAYS maintain correct step ordering after any operation
+        // Re-index remaining steps to ensure they are contiguous
+        const remainingSteps = steps.filter(s => s.id !== stepId)
+        for (let i = 0; i < remainingSteps.length; i++) {
+          const newOrder = i + 1
+          if (remainingSteps[i].order_by !== newOrder) {
+            await (supabase.from('humor_flavor_steps') as any)
+              .update({ order_by: newOrder })
+              .eq('id', remainingSteps[i].id)
+          }
+        }
+        fetchData()
+      }
     }
   }
 
@@ -108,16 +128,26 @@ export default function FlavorDetailsPage({ params }: { params: Promise<{ id: st
 
     if (otherIndex < 0 || otherIndex >= steps.length) return
 
-    const currentStep = newSteps[index]
-    const otherStep = newSteps[otherIndex]
+    // Swap steps in local array
+    const temp = newSteps[index]
+    newSteps[index] = newSteps[otherIndex]
+    newSteps[otherIndex] = temp
 
-    // Use a temporary value to avoid unique constraint violations during swap
-    const tempOrder = -1 
-
+    // Rule: Reassign order_by for ALL steps in that flavor to ensure no duplicates or gaps
     try {
-      await (supabase.from('humor_flavor_steps') as any).update({ order_by: tempOrder }).eq('id', currentStep.id)
-      await (supabase.from('humor_flavor_steps') as any).update({ order_by: currentStep.order_by }).eq('id', otherStep.id)
-      await (supabase.from('humor_flavor_steps') as any).update({ order_by: otherStep.order_by }).eq('id', currentStep.id)
+      // 1. Move everything to temporary negative values to avoid unique constraints
+      for (let i = 0; i < newSteps.length; i++) {
+        await (supabase.from('humor_flavor_steps') as any)
+          .update({ order_by: -(i + 1) })
+          .eq('id', newSteps[i].id)
+      }
+      
+      // 2. Assign final contiguous positive values
+      for (let i = 0; i < newSteps.length; i++) {
+        await (supabase.from('humor_flavor_steps') as any)
+          .update({ order_by: i + 1 })
+          .eq('id', newSteps[i].id)
+      }
       
       fetchData()
     } catch (err) {
