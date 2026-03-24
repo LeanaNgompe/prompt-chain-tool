@@ -19,10 +19,9 @@ export default function TestToolPage() {
     const fetchFlavors = async () => {
       const supabase = createClient()
       const { data } = await supabase.from('humor_flavors').select('*').order('slug')
-      if (data) {
-        setFlavors(data)
-        if (data.length > 0) setSelectedFlavorId(data[0].id.toString())
-      }
+      const typedFlavors: HumorFlavor[] = (data ?? []) as HumorFlavor[]
+      setFlavors(typedFlavors)
+      if (typedFlavors.length > 0) setSelectedFlavorId(typedFlavors[0].id.toString())
     }
     fetchFlavors()
   }, [])
@@ -179,7 +178,7 @@ export default function TestToolPage() {
           </div>
         )}
 
-        {results && (
+        {results !== null && (
           <div className="mt-8 space-y-4">
             <h2 className="text-xl font-medium text-gray-900 dark:text-white">Generated Results</h2>
             <div className="rounded-lg bg-gray-50 dark:bg-gray-900 p-6 border border-gray-200 dark:border-gray-700">
