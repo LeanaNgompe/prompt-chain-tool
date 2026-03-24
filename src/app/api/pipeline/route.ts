@@ -47,6 +47,7 @@ export async function POST(request: Request) {
   try {
     const authorization = request.headers.get('authorization')
     let upstream: Response | null = null
+    let upstreamRawText = ''
     let chosenAttempt: StepAttempt | null = null
     const failedAttempts: Array<{ method: string; path: string; status: number; message: string }> = []
 
@@ -66,11 +67,12 @@ export async function POST(request: Request) {
         cache: 'no-store',
       })
 
+      const resText = await res.text()
       upstream = res
+      upstreamRawText = resText
       chosenAttempt = attempt
       if (res.status !== 405) break
 
-      const resText = await res.text()
       failedAttempts.push({
         method: attempt.method,
         path: attempt.path,
@@ -86,7 +88,7 @@ export async function POST(request: Request) {
       )
     }
 
-    const rawText = await upstream.text()
+    const rawText = upstreamRawText
     let data: unknown = rawText
 
     try {
