@@ -56,10 +56,13 @@ export async function updateSession(request: NextRequest) {
 
     const isAdmin = profile?.is_superadmin || profile?.is_matrix_admin
 
-    if (!isAdmin && !request.nextUrl.pathname.startsWith('/login') && !request.nextUrl.pathname.startsWith('/auth') && request.nextUrl.pathname !== '/') {
-        // Not admin, redirect to login or show error?
-        // User said: Otherwise show "Access Denied"
-        // Let's redirect to a /denied page if not on login/auth
+    if (!isAdmin && 
+        !request.nextUrl.pathname.startsWith('/login') && 
+        !request.nextUrl.pathname.startsWith('/auth') && 
+        request.nextUrl.pathname !== '/' &&
+        request.nextUrl.pathname !== '/denied'
+    ) {
+        // Not admin, redirect to denied page
         const url = request.nextUrl.clone()
         url.pathname = '/denied'
         return NextResponse.redirect(url)
