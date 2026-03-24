@@ -6,11 +6,20 @@ import { Database } from '@/types/database.types'
 import { FlaskConical, Loader2 } from 'lucide-react'
 
 type HumorFlavor = Database['public']['Tables']['humor_flavors']['Row']
+type ImageRow = {
+  id: string
+  imageUrl: string
+  thumbnailUrl: string
+}
 
 export default function TestToolPage() {
   const [flavors, setFlavors] = useState<HumorFlavor[]>([])
   const [selectedFlavorId, setSelectedFlavorId] = useState<string>('')
-  const [imageId, setImageId] = useState<string>('')
+  const [images, setImages] = useState<ImageRow[]>([])
+  const [selectedImageId, setSelectedImageId] = useState<string>('')
+  const [selectedImageUrl, setSelectedImageUrl] = useState<string>('')
+  const [uploadFile, setUploadFile] = useState<File | null>(null)
+  const [uploading, setUploading] = useState(false)
   const [loading, setLoading] = useState(false)
   const [results, setResults] = useState<string[] | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -25,6 +34,42 @@ export default function TestToolPage() {
       if (typedFlavors.length > 0) setSelectedFlavorId(typedFlavors[0].id.toString())
     }
     fetchFlavors()
+  }, [])
+
+  useEffect(() => {
+    const fetchImages = async () => {
+      const supabase = createClient()
+      const supabaseUntyped = supabase as unknown as {
+        from: (table: string) => { select: (columns?: string) => Promise<{ data: unknown }> }
+      }
+
+      const { data } = await supabaseUntyped.from('images').select('*')
+      const rows = (Array.isArray(data) ? data : []) as Array<Record<string, unknown>>
+
+      const mapped: ImageRow[] = rows
+        .map((row) => {
+          const id = row.id ?? row.image_id ?? row.imageId
+          const imageUrl = row.image_url ?? row.url ?? row.imageUrl
+          const thumbnailUrl = row.thumbnail_url ?? row.thumbnailUrl ?? imageUrl
+
+          if (!id || !imageUrl || !thumbnailUrl) return null
+          if (typeof id !== 'string' || typeof imageUrl !== 'string' || typeof thumbnailUrl !== 'string') return null
+          if (!UUID_REGEX.test(id)) return null
+
+          return { id, imageUrl, thumbnailUrl }
+        })
+        .filter(Boolean) as ImageRow[]
+
+      setImages(mapped)
+
+      if (!selectedImageId && mapped.length > 0) {
+        setSelectedImageId(mapped[0].id)
+        setSelectedImageUrl(mapped[0].imageUrl)
+      }
+    }
+
+    fetchImages()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const getAuthHeaders = async (): Promise<Record<string, string>> => {
@@ -75,7 +120,7 @@ export default function TestToolPage() {
     const captionRes = await fetch('/api/pipeline?step=generate-captions', {
       method: 'POST',
       headers: authHeaders,
-      body: JSON.stringify({ imageId: id, humor_flavor_id: Number(flavorId) }),
+      body: JSON.stringify({ imageId: id, humor_flavor_id: Number(flavorId), imageUrl: selectedImageUrl }),
     })
 
     if (!captionRes.ok) {
@@ -107,6 +152,25 @@ export default function TestToolPage() {
         .filter(Boolean)
     }
     if (typeof raw === 'string') {
+      const asJson = raw.trim()
+      if (asJson.startsWith('[') && asJson.endsWith(']')) {
+        try {
+          const parsed = JSON.parse(asJson) as unknown
+          if (Array.isArray(parsed)) {
+            return parsed
+              .map((item) =>
+                String(item)
+                  .replace(/^\s*(?:\d+[\).\-\:]\s*|[-*•]\s*)/, '')
+                  .replace(/^["']|["']$/g, '')
+                  .trim()
+              )
+              .filter((line) => line.length > 0)
+          }
+        } catch {
+          // Fall back to newline parsing.
+        }
+      }
+
       return raw
         .split('\n')
         .map((line) => normalizeLine(line))
@@ -115,21 +179,20 @@ export default function TestToolPage() {
     return []
   }
 
-  const handleGenerate = async (e: React.FormEvent) => {
-    e.preventDefault()
+  const runGeneration = async () => {
     setLoading(true)
     setResults(null)
     setError(null)
 
     try {
-      if (!imageId) {
-        throw new Error('Please provide an image ID')
+      if (!selectedImageId) {
+        throw new Error('Please select or upload an image.')
       }
-      if (!UUID_REGEX.test(imageId.trim())) {
-        throw new Error('Image ID must be a valid UUID from your uploaded/registered image record')
+      if (!UUID_REGEX.test(selectedImageId.trim())) {
+        throw new Error('Selected image id must be a valid UUID.')
       }
 
-      const data = await generateFromImageId(imageId.trim(), selectedFlavorId)
+      const data = await generateFromImageId(selectedImageId.trim(), selectedFlavorId)
       const captions = extractCaptions(data)
       if (captions.length === 0) {
         throw new Error('No captions were returned by the generation pipeline')
@@ -142,6 +205,50 @@ export default function TestToolPage() {
     }
   }
 
+  const handleGenerate = async (e: React.FormEvent) => {
+    e.preventDefault()
+    await runGeneration()
+  }
+
+  const handleUpload = async () => {
+    setError(null)
+    if (!uploadFile) {
+      setError('Please choose an image file to upload.')
+      return
+    }
+    if (!selectedFlavorId) {
+      setError('Select a humor flavor first.')
+      return
+    }
+
+    setUploading(true)
+    try {
+      const formData = new FormData()
+      formData.append('image', uploadFile)
+
+      const res = await fetch('/api/images/upload', { method: 'POST', body: formData })
+      if (!res.ok) {
+        const txt = await res.text()
+        throw new Error(`Upload failed: ${txt}`)
+      }
+
+      const data = await res.json()
+      if (!data.imageId || !data.imageUrl) {
+        throw new Error('Upload succeeded but imageId/imageUrl were missing from the response.')
+      }
+
+      setSelectedImageId(String(data.imageId))
+      setSelectedImageUrl(String(data.imageUrl))
+
+      // Generate captions immediately after upload/registration.
+      await runGeneration()
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Upload failed.')
+    } finally {
+      setUploading(false)
+    }
+  }
+
   return (
     <div>
       <h1 className="text-2xl font-semibold text-gray-900 dark:text-white flex items-center">
@@ -149,7 +256,7 @@ export default function TestToolPage() {
         Test Tool (Caption Generation)
       </h1>
 
-      <div className="mt-8 max-w-2xl">
+      <div className="mt-8 max-w-4xl space-y-6">
         <form onSubmit={handleGenerate} className="space-y-6 rounded-lg bg-white dark:bg-gray-800 p-6 shadow">
           <div>
             <label htmlFor="flavor" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
@@ -169,24 +276,75 @@ export default function TestToolPage() {
             </select>
           </div>
 
-          <div>
-            <label htmlFor="imageId" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-              Image ID
-            </label>
-            <input
-              type="text"
-              id="imageId"
-              required
-              placeholder="e.g. 123"
-              value={imageId}
-              onChange={(e) => setImageId(e.target.value)}
-              className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-            />
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+            <div className="rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 p-4">
+              <h3 className="text-sm font-semibold text-gray-900 dark:text-white">A) Upload a new image</h3>
+              <div className="mt-3">
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => setUploadFile(e.target.files?.[0] || null)}
+                  className="block w-full text-sm text-gray-900 dark:text-gray-100"
+                />
+              </div>
+
+              <button
+                type="button"
+                onClick={() => void handleUpload()}
+                disabled={uploading || loading || !selectedFlavorId}
+                className="mt-4 flex w-full justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50"
+              >
+                {uploading ? 'Uploading...' : 'Upload & Generate'}
+              </button>
+            </div>
+
+            <div className="rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 p-4">
+              <h3 className="text-sm font-semibold text-gray-900 dark:text-white">B) Select an existing image</h3>
+              <div className="mt-3 max-h-64 overflow-auto">
+                {images.length === 0 ? (
+                  <p className="text-sm text-gray-600 dark:text-gray-300">No images found.</p>
+                ) : (
+                  <div className="grid grid-cols-3 gap-3">
+                    {images.map((img) => {
+                      const isSelected = img.id === selectedImageId
+                      return (
+                        <button
+                          key={img.id}
+                          type="button"
+                          onClick={() => {
+                            setSelectedImageId(img.id)
+                            setSelectedImageUrl(img.imageUrl)
+                          }}
+                          className={`relative overflow-hidden rounded-md border p-1 ${
+                            isSelected
+                              ? 'border-indigo-600 ring-2 ring-indigo-200 dark:ring-indigo-900'
+                              : 'border-gray-200 hover:border-gray-400 dark:border-gray-700 dark:hover:border-gray-500'
+                          }`}
+                        >
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img src={img.thumbnailUrl} alt="" className="h-20 w-full rounded-sm object-cover" />
+                        </button>
+                      )
+                    })}
+                  </div>
+                )}
+              </div>
+
+              <div className="mt-3">
+                {selectedImageId ? (
+                  <p className="text-xs text-gray-600 dark:text-gray-300">
+                    Selected: <span className="font-mono">{selectedImageId}</span>
+                  </p>
+                ) : (
+                  <p className="text-xs text-gray-600 dark:text-gray-300">Select an image to enable generation.</p>
+                )}
+              </div>
+            </div>
           </div>
 
           <button
             type="submit"
-            disabled={loading || !imageId || !selectedFlavorId}
+            disabled={loading || uploading || !selectedFlavorId || !selectedImageId}
             className="flex w-full justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50"
           >
             {loading ? (

@@ -172,21 +172,42 @@ async function handleGenerateCaptions(body: unknown, request: Request) {
     )
   }
 
+  // Untyped DB access for tables not present in `src/types/database.types.ts`.
+  const dbUntyped = supabase as unknown as {
+    from: (table: string) => {
+      insert: (values: unknown[]) => Promise<{ error: { message?: string } | null }>
+    }
+  }
+
   const authorization = request.headers.get('authorization')
   const executionTrail: Array<{ stepId: number; order_by: number; output: string }> = []
-  let stepInput = String(payload.imageId ?? '')
+  // Previous step output that we pipe into the next step.
+  // For step 1 there is no previous textual output, so we keep it empty.
+  let stepInput = ''
 
-  if (!stepInput) {
+  const imageIdValue = payload.imageId ?? payload.image_id ?? payload.imageId
+  const imageId = imageIdValue ? String(imageIdValue) : ''
+
+  if (!imageId) {
     return NextResponse.json(
       { error: true, message: 'imageId is required to start the step pipeline.' },
       { status: 400 }
     )
   }
 
-  for (const stepRow of steps) {
-    const composedUserPrompt = `${stepRow.llm_user_prompt ?? ''}\n\nInput:\n${stepInput}`.trim()
+  const uuidRegex =
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+  if (!uuidRegex.test(imageId)) {
+    return NextResponse.json({ error: true, message: 'imageId must be a valid UUID.' }, { status: 400 })
+  }
+
+  for (const [idx, stepRow] of steps.entries()) {
+    const composedUserPrompt =
+      idx === 0
+        ? String(stepRow.llm_user_prompt ?? '')
+        : `${stepRow.llm_user_prompt ?? ''}\n\nInput:\n${stepInput}`.trim()
     const stepPayload = {
-      imageId: payload.imageId ?? null,
+      imageId,
       imageUrl: payload.imageUrl ?? payload.image ?? null,
       humor_flavor_id: humorFlavorId,
       step_id: stepRow.id,
@@ -232,7 +253,7 @@ async function handleGenerateCaptions(body: unknown, request: Request) {
       (typeof parsed === 'string' ? parsed : stepText) ||
       `Step ${stepRow.order_by} returned empty output.`
 
-    await (supabase.from('llm_model_responses' as any) as any).insert([
+    const { error: insertStepError } = await dbUntyped.from('llm_model_responses').insert([
       {
         humor_flavor_id: humorFlavorId,
         humor_flavor_step_id: stepRow.id,
@@ -246,26 +267,43 @@ async function handleGenerateCaptions(body: unknown, request: Request) {
       },
     ])
 
+    if (insertStepError) {
+      return NextResponse.json(
+        { error: true, message: 'Failed to store step output.', details: insertStepError.message },
+        { status: 500 }
+      )
+    }
+
     executionTrail.push({ stepId: stepRow.id, order_by: stepRow.order_by, output: stepOutput })
     stepInput = stepOutput
   }
 
   const finalOutput = executionTrail[executionTrail.length - 1]?.output ?? ''
-  await (supabase.from('captions' as any) as any).insert([
+  const { error: insertCaptionError } = await dbUntyped.from('captions').insert([
     {
       humor_flavor_id: humorFlavorId,
-      image_id: payload.imageId ?? null,
+      image_id: imageId,
       image_url: payload.imageUrl ?? payload.image ?? null,
       text: finalOutput,
       raw_output: finalOutput,
     },
   ])
 
+  if (insertCaptionError) {
+    return NextResponse.json(
+      { error: true, message: 'Failed to store caption output.', details: insertCaptionError.message },
+      { status: 500 }
+    )
+  }
+
+  const captionsList = splitCaptions(finalOutput)
+
   return NextResponse.json({
     humor_flavor_id: humorFlavorId,
     steps_executed: executionTrail.length,
     step_outputs: executionTrail,
-    captions: finalOutput,
+    captions: captionsList,
+    captions_text: finalOutput,
   })
 }
 
@@ -288,4 +326,17 @@ function extractOutputText(parsed: unknown): string {
   if (Array.isArray(nested)) return nested.join('\n')
 
   return ''
+}
+
+function splitCaptions(text: string): string[] {
+  const normalizeLine = (line: string) =>
+    line
+      .replace(/^\s*(?:\d+[\).\-\:]\s*|[-*•]\s*)/, '')
+      .replace(/^["']|["']$/g, '')
+      .trim()
+
+  return text
+    .split('\n')
+    .map((l) => normalizeLine(l))
+    .filter((l) => l.length > 0)
 }
