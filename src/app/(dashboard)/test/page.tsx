@@ -46,7 +46,11 @@ export default function TestToolPage() {
 
     try {
       const parsed = JSON.parse(bodyText) as { message?: string; statusMessage?: string; details?: string }
-      const details = parsed.message || parsed.statusMessage || parsed.details
+      const primary = parsed.message || parsed.statusMessage
+      if (primary && parsed.details) {
+        return `${fallback}: ${primary} (${parsed.details})`
+      }
+      const details = primary || parsed.details
       return details ? `${fallback}: ${details}` : `${fallback} (${response.status})`
     } catch {
       return `${fallback}: ${bodyText}`
