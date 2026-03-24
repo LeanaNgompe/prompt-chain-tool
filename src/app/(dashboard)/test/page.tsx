@@ -53,6 +53,12 @@ export default function TestToolPage() {
     }
   }
 
+  const getUploadErrorMessage = async (response: Response, fallback: string) => {
+    const bodyText = await response.text()
+    if (!bodyText) return `${fallback} (${response.status})`
+    return `${fallback}: ${bodyText.slice(0, 400)}`
+  }
+
   const uploadImageAndGenerate = async (file: File, flavorId: string) => {
     const authHeaders = await getAuthHeaders()
 
@@ -83,7 +89,7 @@ export default function TestToolPage() {
     })
 
     if (!s3UploadRes.ok) {
-      throw new Error('Image upload failed')
+      throw new Error(await getUploadErrorMessage(s3UploadRes, 'Image upload failed'))
     }
 
     const registerRes = await fetch('/api/pipeline?step=register', {
