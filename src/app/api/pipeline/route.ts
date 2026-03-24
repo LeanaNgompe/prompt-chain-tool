@@ -174,11 +174,11 @@ async function handleGenerateCaptions(body: unknown, request: Request) {
 
   const authorization = request.headers.get('authorization')
   const executionTrail: Array<{ stepId: number; order_by: number; output: string }> = []
-  let stepInput = String(payload.imageId ?? payload.imageUrl ?? payload.image ?? '')
+  let stepInput = String(payload.imageId ?? '')
 
   if (!stepInput) {
     return NextResponse.json(
-      { error: true, message: 'imageId or imageUrl is required to start the step pipeline.' },
+      { error: true, message: 'imageId is required to start the step pipeline.' },
       { status: 400 }
     )
   }

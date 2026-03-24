@@ -10,7 +10,7 @@ type HumorFlavor = Database['public']['Tables']['humor_flavors']['Row']
 export default function TestToolPage() {
   const [flavors, setFlavors] = useState<HumorFlavor[]>([])
   const [selectedFlavorId, setSelectedFlavorId] = useState<string>('')
-  const [imageUrl, setImageUrl] = useState<string>('')
+  const [imageId, setImageId] = useState<string>('')
   const [loading, setLoading] = useState(false)
   const [results, setResults] = useState<unknown>(null)
   const [error, setError] = useState<string | null>(null)
@@ -68,13 +68,13 @@ export default function TestToolPage() {
     }
   }
 
-  const generateFromImageUrl = async (url: string, flavorId: string) => {
+  const generateFromImageId = async (id: string, flavorId: string) => {
     const authHeaders = await getAuthHeaders()
 
     const captionRes = await fetch('/api/pipeline?step=generate-captions', {
       method: 'POST',
       headers: authHeaders,
-      body: JSON.stringify({ imageUrl: url, humor_flavor_id: Number(flavorId) }),
+      body: JSON.stringify({ imageId: id, humor_flavor_id: Number(flavorId) }),
     })
 
     if (!captionRes.ok) {
@@ -91,11 +91,11 @@ export default function TestToolPage() {
     setError(null)
 
     try {
-      if (!imageUrl) {
-        throw new Error('Please provide an image URL')
+      if (!imageId) {
+        throw new Error('Please provide an image ID')
       }
 
-      const data = await generateFromImageUrl(imageUrl, selectedFlavorId)
+      const data = await generateFromImageId(imageId, selectedFlavorId)
       setResults(data)
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Something went wrong')
@@ -132,23 +132,23 @@ export default function TestToolPage() {
           </div>
 
           <div>
-            <label htmlFor="imageUrl" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-              Image URL
+            <label htmlFor="imageId" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              Image ID
             </label>
             <input
-              type="url"
-              id="imageUrl"
+              type="text"
+              id="imageId"
               required
-              placeholder="https://example.com/image.jpg"
-              value={imageUrl}
-              onChange={(e) => setImageUrl(e.target.value)}
+              placeholder="e.g. 123"
+              value={imageId}
+              onChange={(e) => setImageId(e.target.value)}
               className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
             />
           </div>
 
           <button
             type="submit"
-            disabled={loading || !imageUrl || !selectedFlavorId}
+            disabled={loading || !imageId || !selectedFlavorId}
             className="flex w-full justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50"
           >
             {loading ? (
