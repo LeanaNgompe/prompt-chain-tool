@@ -8,17 +8,17 @@ import { FlaskConical, Loader2 } from 'lucide-react'
 type HumorFlavor = Database['public']['Tables']['humor_flavors']['Row']
 
 export default function TestToolPage() {
-  const supabase = createClient()
   const [flavors, setFlavors] = useState<HumorFlavor[]>([])
   const [selectedFlavorId, setSelectedFlavorId] = useState<string>('')
-  const [imageUrl, setImageUrl] = useState<string>('')
+  const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [loading, setLoading] = useState(false)
-  const [results, setResults] = useState<any>(null)
+  const [results, setResults] = useState<unknown>(null)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     const fetchFlavors = async () => {
-      const { data } = await (supabase.from('humor_flavors') as any).select('*').order('slug')
+      const supabase = createClient()
+      const { data } = await supabase.from('humor_flavors').select('*').order('slug')
       if (data) {
         setFlavors(data)
         if (data.length > 0) setSelectedFlavorId(data[0].id.toString())
@@ -27,6 +27,75 @@ export default function TestToolPage() {
     fetchFlavors()
   }, [])
 
+  const uploadImageAndGenerate = async (file: File, flavorId: string) => {
+    const presignRes = await fetch('/api/pipeline?step=generate-url', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ contentType: file.type }),
+    })
+
+    if (!presignRes.ok) {
+      throw new Error('Failed to generate upload URL')
+    }
+
+    const presignData = await presignRes.json()
+    const uploadUrl = presignData.uploadUrl || presignData.url
+    const cdnUrl = presignData.cdnUrl || presignData.publicUrl
+
+    if (!uploadUrl) {
+      throw new Error('Upload URL missing from response')
+    }
+
+    const s3UploadRes = await fetch(uploadUrl, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': file.type,
+      },
+      body: file,
+    })
+
+    if (!s3UploadRes.ok) {
+      throw new Error('Image upload failed')
+    }
+
+    const registerRes = await fetch('/api/pipeline?step=register', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        imageUrl: cdnUrl || uploadUrl.split('?')[0],
+        isCommonUse: false,
+      }),
+    })
+
+    if (!registerRes.ok) {
+      throw new Error('Failed to register image')
+    }
+
+    const registerData = await registerRes.json()
+    const imageId = registerData.imageId || registerData.id || registerData.image?.id
+    if (!imageId) {
+      throw new Error('Image ID missing from registration response')
+    }
+
+    const captionRes = await fetch('/api/pipeline?step=generate-captions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ imageId, flavorId }),
+    })
+
+    if (!captionRes.ok) {
+      throw new Error('Caption generation failed')
+    }
+
+    return captionRes.json()
+  }
+
   const handleGenerate = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
@@ -34,25 +103,14 @@ export default function TestToolPage() {
     setError(null)
 
     try {
-      const response = await fetch('https://api.almostcrackd.ai/generate', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          image: imageUrl,
-          flavor_id: selectedFlavorId,
-        }),
-      })
-
-      if (!response.ok) {
-        throw new Error(`API error: ${response.statusText}`)
+      if (!selectedFile) {
+        throw new Error('Please select an image file')
       }
 
-      const data = await response.json()
+      const data = await uploadImageAndGenerate(selectedFile, selectedFlavorId)
       setResults(data)
-    } catch (err: any) {
-      setError(err.message || 'Something went wrong')
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Something went wrong')
     } finally {
       setLoading(false)
     }
@@ -86,23 +144,22 @@ export default function TestToolPage() {
           </div>
 
           <div>
-            <label htmlFor="imageUrl" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-              Image URL
+            <label htmlFor="imageFile" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              Image File
             </label>
             <input
-              type="url"
-              id="imageUrl"
+              type="file"
+              id="imageFile"
+              accept="image/*"
               required
-              placeholder="https://example.com/image.jpg"
-              value={imageUrl}
-              onChange={(e) => setImageUrl(e.target.value)}
+              onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
               className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
             />
           </div>
 
           <button
             type="submit"
-            disabled={loading || !imageUrl || !selectedFlavorId}
+            disabled={loading || !selectedFile || !selectedFlavorId}
             className="flex w-full justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50"
           >
             {loading ? (
