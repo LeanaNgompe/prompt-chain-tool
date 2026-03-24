@@ -4,17 +4,17 @@ const API_BASE_URL = 'https://api.almostcrackd.ai'
 
 type Step = 'generate-url' | 'register' | 'generate-captions'
 
-const STEP_PATHS: Record<Step, string> = {
-  'generate-url': '/pipeline/generate-url',
-  register: '/pipeline/register',
-  'generate-captions': '/pipeline/generate-captions',
+const STEP_CANDIDATE_PATHS: Record<Step, string[]> = {
+  'generate-url': ['/pipeline/generate-url', '/pipeline?step=generate-url', '/generate-url'],
+  register: ['/pipeline/register', '/pipeline?step=register', '/register'],
+  'generate-captions': ['/pipeline/generate-captions', '/pipeline?step=generate-captions', '/generate-captions'],
 }
 
 export async function POST(request: Request) {
   const { searchParams } = new URL(request.url)
   const step = searchParams.get('step') as Step | null
 
-  if (!step || !(step in STEP_PATHS)) {
+  if (!step || !(step in STEP_CANDIDATE_PATHS)) {
     return NextResponse.json({ error: true, message: 'Invalid pipeline step.' }, { status: 400 })
   }
 
@@ -27,15 +27,29 @@ export async function POST(request: Request) {
 
   try {
     const authorization = request.headers.get('authorization')
-    const upstream = await fetch(`${API_BASE_URL}${STEP_PATHS[step]}`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        ...(authorization ? { Authorization: authorization } : {}),
-      },
-      body: JSON.stringify(body),
-      cache: 'no-store',
-    })
+    let upstream: Response | null = null
+
+    for (const path of STEP_CANDIDATE_PATHS[step]) {
+      const res = await fetch(`${API_BASE_URL}${path}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(authorization ? { Authorization: authorization } : {}),
+        },
+        body: JSON.stringify(body),
+        cache: 'no-store',
+      })
+
+      upstream = res
+      if (res.status !== 405) break
+    }
+
+    if (!upstream) {
+      return NextResponse.json(
+        { error: true, message: 'No upstream response received.' },
+        { status: 502 }
+      )
+    }
 
     const rawText = await upstream.text()
     let data: unknown = rawText
