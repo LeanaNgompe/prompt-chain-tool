@@ -45,8 +45,19 @@ export default function TestToolPage() {
     if (!bodyText) return `${fallback} (${response.status})`
 
     try {
-      const parsed = JSON.parse(bodyText) as { message?: string; statusMessage?: string; details?: string }
+      const parsed = JSON.parse(bodyText) as {
+        message?: string
+        statusMessage?: string
+        details?: string
+        attempted?: Array<{ method?: string; path?: string; status?: number }>
+      }
       const primary = parsed.message || parsed.statusMessage
+      if (parsed.attempted && parsed.attempted.length > 0) {
+        const attempts = parsed.attempted
+          .map((a) => `${a.method ?? 'METHOD'} ${a.path ?? 'PATH'} -> ${a.status ?? 'unknown'}`)
+          .join(' | ')
+        return `${fallback}: ${primary ?? 'Request failed'} (${attempts})`
+      }
       if (primary && parsed.details) {
         return `${fallback}: ${primary} (${parsed.details})`
       }
@@ -118,7 +129,7 @@ export default function TestToolPage() {
     const captionRes = await fetch('/api/pipeline?step=generate-captions', {
       method: 'POST',
       headers: authHeaders,
-      body: JSON.stringify({ imageId, flavorId }),
+      body: JSON.stringify({ imageId, humor_flavor_id: Number(flavorId) }),
     })
 
     if (!captionRes.ok) {
