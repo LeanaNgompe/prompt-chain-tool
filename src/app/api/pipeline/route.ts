@@ -5,9 +5,9 @@ const API_BASE_URL = 'https://api.almostcrackd.ai'
 type Step = 'generate-url' | 'register' | 'generate-captions'
 
 const STEP_PATHS: Record<Step, string> = {
-  'generate-url': '/generate-url',
-  register: '/register',
-  'generate-captions': '/generate-captions',
+  'generate-url': '/pipeline/generate-url',
+  register: '/pipeline/register',
+  'generate-captions': '/pipeline/generate-captions',
 }
 
 export async function POST(request: Request) {
@@ -26,10 +26,12 @@ export async function POST(request: Request) {
   }
 
   try {
+    const authorization = request.headers.get('authorization')
     const upstream = await fetch(`${API_BASE_URL}${STEP_PATHS[step]}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        ...(authorization ? { Authorization: authorization } : {}),
       },
       body: JSON.stringify(body),
       cache: 'no-store',

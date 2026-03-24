@@ -26,17 +26,44 @@ export default function TestToolPage() {
     fetchFlavors()
   }, [])
 
+  const getAuthHeaders = async (): Promise<Record<string, string>> => {
+    const supabase = createClient()
+    const { data } = await supabase.auth.getSession()
+    const accessToken = data.session?.access_token
+
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    }
+    if (accessToken) {
+      headers.Authorization = `Bearer ${accessToken}`
+    }
+    return headers
+  }
+
+  const getErrorMessage = async (response: Response, fallback: string) => {
+    const bodyText = await response.text()
+    if (!bodyText) return `${fallback} (${response.status})`
+
+    try {
+      const parsed = JSON.parse(bodyText) as { message?: string; statusMessage?: string; details?: string }
+      const details = parsed.message || parsed.statusMessage || parsed.details
+      return details ? `${fallback}: ${details}` : `${fallback} (${response.status})`
+    } catch {
+      return `${fallback}: ${bodyText}`
+    }
+  }
+
   const uploadImageAndGenerate = async (file: File, flavorId: string) => {
+    const authHeaders = await getAuthHeaders()
+
     const presignRes = await fetch('/api/pipeline?step=generate-url', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: authHeaders,
       body: JSON.stringify({ contentType: file.type }),
     })
 
     if (!presignRes.ok) {
-      throw new Error('Failed to generate upload URL')
+      throw new Error(await getErrorMessage(presignRes, 'Failed to generate upload URL'))
     }
 
     const presignData = await presignRes.json()
@@ -61,9 +88,7 @@ export default function TestToolPage() {
 
     const registerRes = await fetch('/api/pipeline?step=register', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: authHeaders,
       body: JSON.stringify({
         imageUrl: cdnUrl || uploadUrl.split('?')[0],
         isCommonUse: false,
@@ -71,7 +96,7 @@ export default function TestToolPage() {
     })
 
     if (!registerRes.ok) {
-      throw new Error('Failed to register image')
+      throw new Error(await getErrorMessage(registerRes, 'Failed to register image'))
     }
 
     const registerData = await registerRes.json()
@@ -82,14 +107,12 @@ export default function TestToolPage() {
 
     const captionRes = await fetch('/api/pipeline?step=generate-captions', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: authHeaders,
       body: JSON.stringify({ imageId, flavorId }),
     })
 
     if (!captionRes.ok) {
-      throw new Error('Caption generation failed')
+      throw new Error(await getErrorMessage(captionRes, 'Caption generation failed'))
     }
 
     return captionRes.json()
