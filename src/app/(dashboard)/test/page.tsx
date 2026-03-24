@@ -95,14 +95,22 @@ export default function TestToolPage() {
     }
 
     const raw = payload.captions ?? payload.caption ?? payload.text ?? payload.output
+    const normalizeLine = (line: string) =>
+      line
+        .replace(/^\s*(?:\d+[\).\-\:]\s*|[-*•]\s*)/, '')
+        .replace(/^["']|["']$/g, '')
+        .trim()
+
     if (Array.isArray(raw)) {
-      return raw.map((item) => String(item)).filter(Boolean)
+      return raw
+        .map((item) => normalizeLine(String(item)))
+        .filter(Boolean)
     }
     if (typeof raw === 'string') {
       return raw
         .split('\n')
-        .map((line) => line.trim())
-        .filter(Boolean)
+        .map((line) => normalizeLine(line))
+        .filter((line) => line.length > 0)
     }
     return []
   }
@@ -201,12 +209,27 @@ export default function TestToolPage() {
         {results !== null && (
           <div className="mt-8 space-y-4">
             <h2 className="text-xl font-medium text-gray-900 dark:text-white">Generated Captions</h2>
-            <div className="rounded-lg bg-gray-50 dark:bg-gray-900 p-6 border border-gray-200 dark:border-gray-700">
-              <ul className="list-disc pl-5 space-y-2 text-sm text-gray-700 dark:text-gray-300">
-                {results.map((caption, index) => (
-                  <li key={`${index}-${caption}`}>{caption}</li>
-                ))}
-              </ul>
+            <div className="overflow-hidden rounded-lg shadow ring-1 ring-black ring-opacity-5">
+              <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                <thead className="bg-gray-50 dark:bg-gray-800">
+                  <tr>
+                    <th className="w-16 py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 dark:text-white sm:pl-6">
+                      #
+                    </th>
+                    <th className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white">Caption</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-200 dark:divide-gray-700 bg-white dark:bg-gray-900">
+                  {results.map((caption, index) => (
+                    <tr key={`${index}-${caption}`}>
+                      <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-indigo-600 dark:text-indigo-400 sm:pl-6">
+                        {index + 1}
+                      </td>
+                      <td className="px-3 py-4 text-sm text-gray-700 dark:text-gray-300">{caption}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           </div>
         )}
