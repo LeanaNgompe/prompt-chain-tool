@@ -211,14 +211,14 @@ async function handleGenerateCaptions(body: unknown, request: Request) {
   let captionRequestId = Number(payload.caption_request_id ?? payload.requestId ?? 0)
 
   if (captionRequestId <= 0) {
-    const { data: latestRequest } = await supabase
+    const { data: latestRequest } = await (supabase as any)
       .from('caption_requests')
       .select('id')
       .eq('image_id', imageId)
       .eq('profile_id', profileId)
       .order('created_datetime_utc', { ascending: false })
       .limit(1)
-      .single()
+      .maybeSingle()
 
     if (latestRequest) {
       captionRequestId = Number(latestRequest.id)
