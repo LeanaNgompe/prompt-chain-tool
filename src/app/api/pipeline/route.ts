@@ -204,7 +204,41 @@ async function handleGenerateCaptions(body: unknown, request: Request) {
   const { data: userData } = await supabase.auth.getUser()
   const profileId = userData.user?.id
 
-  const captionRequestId = Number(payload.caption_request_id ?? payload.requestId ?? 0)
+  if (!profileId) {
+    return NextResponse.json({ error: true, message: 'Not authenticated.' }, { status: 401 })
+  }
+
+  let captionRequestId = Number(payload.caption_request_id ?? payload.requestId ?? 0)
+
+  if (captionRequestId <= 0) {
+    const { data: latestRequest } = await supabase
+      .from('caption_requests')
+      .select('id')
+      .eq('image_id', imageId)
+      .eq('profile_id', profileId)
+      .order('created_datetime_utc', { ascending: false })
+      .limit(1)
+      .single()
+
+    if (latestRequest) {
+      captionRequestId = Number(latestRequest.id)
+    } else {
+      // Create one if none exists (for manual tool testing).
+      const { data: newReq, error: newReqError } = await (supabase as any)
+        .from('caption_requests')
+        .insert([{ image_id: imageId, profile_id: profileId }])
+        .select('id')
+        .single()
+      
+      if (newReqError) {
+        return NextResponse.json(
+          { error: true, message: 'Failed to find or create caption_request.', details: newReqError.message },
+          { status: 500 }
+        )
+      }
+      captionRequestId = Number(newReq.id)
+    }
+  }
 
   for (const [idx, stepRow] of steps.entries()) {
     const composedUserPrompt =
