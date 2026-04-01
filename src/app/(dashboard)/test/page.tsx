@@ -4,6 +4,7 @@ import { createClient } from '@/utils/supabase/client'
 import { useEffect, useState } from 'react'
 import { Database } from '@/types/database.types'
 import { FlaskConical, Loader2 } from 'lucide-react'
+import { Caption, CaptionList } from '@/components/caption-list'
 
 type HumorFlavor = Database['public']['Tables']['humor_flavors']['Row']
 type ImageRow = {
@@ -21,7 +22,7 @@ export default function TestToolPage() {
   const [uploadFile, setUploadFile] = useState<File | null>(null)
   const [uploading, setUploading] = useState(false)
   const [loading, setLoading] = useState(false)
-  const [results, setResults] = useState<string[] | null>(null)
+  const [results, setResults] = useState<Caption[] | null>(null)
   const [error, setError] = useState<string | null>(null)
   const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
 
@@ -130,7 +131,7 @@ export default function TestToolPage() {
     return captionRes.json()
   }
 
-  const extractCaptions = (data: unknown): string[] => {
+  const extractCaptions = (data: unknown): Caption[] => {
     if (!data || typeof data !== 'object') return []
     const payload = data as {
       captions?: unknown
@@ -148,8 +149,20 @@ export default function TestToolPage() {
 
     if (Array.isArray(raw)) {
       return raw
-        .map((item) => normalizeLine(String(item)))
-        .filter(Boolean)
+        .map((item, index) => {
+          if (typeof item === 'object' && item !== null && 'content' in item) {
+            const obj = item as Record<string, unknown>
+            return {
+              id: String(obj.id ?? index),
+              content: normalizeLine(String(obj.content ?? '')),
+              image_id: String(obj.image_id ?? ''),
+              humor_flavor_id: obj.humor_flavor_id as number | string | undefined,
+            }
+          }
+          const content = normalizeLine(String(item))
+          return content ? { id: String(index), content } : null
+        })
+        .filter((c): c is Caption => c !== null)
     }
     if (typeof raw === 'string') {
       const asJson = raw.trim()
@@ -158,13 +171,11 @@ export default function TestToolPage() {
           const parsed = JSON.parse(asJson) as unknown
           if (Array.isArray(parsed)) {
             return parsed
-              .map((item) =>
-                String(item)
-                  .replace(/^\s*(?:\d+[\).\-\:]\s*|[-*•]\s*)/, '')
-                  .replace(/^["']|["']$/g, '')
-                  .trim()
-              )
-              .filter((line) => line.length > 0)
+              .map((item, index) => {
+                const content = normalizeLine(String(item))
+                return content ? { id: String(index), content } : null
+              })
+              .filter((c): c is Caption => c !== null)
           }
         } catch {
           // Fall back to newline parsing.
@@ -173,8 +184,11 @@ export default function TestToolPage() {
 
       return raw
         .split('\n')
-        .map((line) => normalizeLine(line))
-        .filter((line) => line.length > 0)
+        .map((line, index) => {
+          const content = normalizeLine(line)
+          return content ? { id: String(index), content } : null
+        })
+        .filter((c): c is Caption => c !== null)
     }
     return []
   }
@@ -367,28 +381,7 @@ export default function TestToolPage() {
         {results !== null && (
           <div className="mt-8 space-y-4">
             <h2 className="text-xl font-medium text-gray-900 dark:text-white">Generated Captions</h2>
-            <div className="overflow-hidden rounded-lg shadow ring-1 ring-black ring-opacity-5">
-              <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                <thead className="bg-gray-50 dark:bg-gray-800">
-                  <tr>
-                    <th className="w-16 py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 dark:text-white sm:pl-6">
-                      #
-                    </th>
-                    <th className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white">Caption</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-200 dark:divide-gray-700 bg-white dark:bg-gray-900">
-                  {results.map((caption, index) => (
-                    <tr key={`${index}-${caption}`}>
-                      <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-indigo-600 dark:text-indigo-400 sm:pl-6">
-                        {index + 1}
-                      </td>
-                      <td className="px-3 py-4 text-sm text-gray-700 dark:text-gray-300">{caption}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+            <CaptionList captions={results} />
           </div>
         )}
       </div>
