@@ -1,7 +1,12 @@
+import { LayoutDashboard } from 'lucide-react'
+
 export default function DashboardPage() {
   return (
     <div className="bg-warm-paper min-h-full p-8">
-      <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-8 underline decoration-accent decoration-wavy">
+      <h1 className="text-3xl font-black text-gray-900 dark:text-white flex items-center mb-10 underline decoration-accent decoration-wavy underline-offset-8">
+        <div className="p-2 border-sketchy bg-pastel-purple/30 mr-4 shadow-hand">
+          <LayoutDashboard className="h-8 w-8 text-accent" />
+        </div>
         Dashboard
       </h1>
       
