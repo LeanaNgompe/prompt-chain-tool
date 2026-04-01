@@ -148,47 +148,55 @@ export default function TestToolPage() {
         .trim()
 
     if (Array.isArray(raw)) {
-      return raw
-        .map((item, index) => {
-          if (typeof item === 'object' && item !== null && 'content' in item) {
-            const obj = item as Record<string, unknown>
-            return {
-              id: String(obj.id ?? index),
-              content: normalizeLine(String(obj.content ?? '')),
-              image_id: String(obj.image_id ?? ''),
-              humor_flavor_id: obj.humor_flavor_id as number | string | undefined,
-            }
-          }
+      const items: Caption[] = []
+      raw.forEach((item, index) => {
+        if (typeof item === 'object' && item !== null && 'content' in item) {
+          const obj = item as Record<string, unknown>
+          items.push({
+            id: String(obj.id ?? index),
+            content: normalizeLine(String(obj.content ?? '')),
+            image_id: String(obj.image_id ?? ''),
+            humor_flavor_id: obj.humor_flavor_id as number | string | undefined,
+          })
+        } else {
           const content = normalizeLine(String(item))
-          return content ? { id: String(index), content } : null
-        })
-        .filter((c): c is Caption => c !== null)
+          if (content) {
+            items.push({ id: String(index), content })
+          }
+        }
+      })
+      return items
     }
+
     if (typeof raw === 'string') {
       const asJson = raw.trim()
       if (asJson.startsWith('[') && asJson.endsWith(']')) {
         try {
           const parsed = JSON.parse(asJson) as unknown
           if (Array.isArray(parsed)) {
-            return parsed
-              .map((item, index) => {
-                const content = normalizeLine(String(item))
-                return content ? { id: String(index), content } : null
-              })
-              .filter((c): c is Caption => c !== null)
+            const items: Caption[] = []
+            parsed.forEach((item, index) => {
+              const content = normalizeLine(String(item))
+              if (content) {
+                items.push({ id: String(index), content })
+              }
+            })
+            return items
           }
         } catch {
           // Fall back to newline parsing.
         }
       }
 
-      return raw
-        .split('\n')
-        .map((line, index) => {
-          const content = normalizeLine(line)
-          return content ? { id: String(index), content } : null
-        })
-        .filter((c): c is Caption => c !== null)
+      const lines = raw.split('\n')
+      const items: Caption[] = []
+      lines.forEach((line, index) => {
+        const content = normalizeLine(line)
+        if (content) {
+          items.push({ id: String(index), content })
+        }
+      })
+      return items
     }
     return []
   }
