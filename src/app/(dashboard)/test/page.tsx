@@ -3,7 +3,7 @@
 import { createClient } from '@/utils/supabase/client'
 import { useEffect, useState } from 'react'
 import { Database } from '@/types/database.types'
-import { FlaskConical, Loader2 } from 'lucide-react'
+import { FlaskConical, Loader2, Sparkles } from 'lucide-react'
 import { Caption, CaptionList } from '@/components/caption-list'
 
 type HumorFlavor = Database['public']['Tables']['humor_flavors']['Row']
@@ -316,28 +316,28 @@ export default function TestToolPage() {
   }
 
   return (
-    <div className="bg-warm-paper min-h-screen p-4 md:p-8">
-      <h1 className="text-3xl font-bold text-gray-900 dark:text-white flex items-center mb-8">
-        <div className="p-2 border-sketchy bg-pastel-purple/30 mr-4">
+    <div className="bg-warm-paper min-h-screen p-4 md:p-8 text-foreground">
+      <h1 className="text-3xl font-bold flex items-center mb-8">
+        <div className="p-2 border-sketchy bg-pastel-purple/30 mr-4 shadow-hand">
           <FlaskConical className="h-8 w-8 text-accent" />
         </div>
-        Test Tool <span className="ml-2 font-normal text-gray-500 italic">(Caption Generation)</span>
+        Test Tool <span className="ml-2 font-normal text-gray-500 italic dark:text-gray-400">(Caption Generation)</span>
       </h1>
 
       <div className="max-w-5xl space-y-10">
         <form onSubmit={handleGenerate} className="space-y-8 border-sketchy bg-white dark:bg-zinc-900 p-8 shadow-hand">
           <div>
-            <label htmlFor="flavor" className="block text-lg font-bold text-gray-700 dark:text-gray-300 mb-2">
-              Select Humor Flavor
+            <label htmlFor="flavor" className="block text-xl font-black text-gray-900 dark:text-white mb-2 underline decoration-pastel-yellow decoration-4">
+              Step 1: Select Humor Flavor
             </label>
             <select
               id="flavor"
               value={selectedFlavorId}
               onChange={(e) => setSelectedFlavorId(e.target.value)}
-              className="mt-1 block w-full border-sketchy-soft bg-pastel-yellow/10 dark:bg-zinc-800 p-3 text-lg focus:ring-accent focus:border-accent"
+              className="mt-1 block w-full border-sketchy-soft bg-pastel-yellow/20 dark:bg-zinc-800 p-4 text-xl font-bold focus:ring-accent focus:border-accent text-gray-900 dark:text-white"
             >
               {flavors.map((f) => (
-                <option key={f.id} value={f.id}>
+                <option key={f.id} value={f.id} className="bg-white dark:bg-zinc-800">
                   {f.slug}
                 </option>
               ))}
@@ -345,14 +345,14 @@ export default function TestToolPage() {
           </div>
 
           <div className="grid grid-cols-1 gap-10 md:grid-cols-2">
-            <div className="border-sketchy-soft bg-pastel-blue/10 dark:bg-blue-900/5 p-6 transform rotate-1">
-              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4 underline decoration-accent decoration-wavy">A) Upload a new image</h3>
+            <div className="border-sketchy-soft bg-pastel-blue/10 dark:bg-blue-900/10 p-6 transform rotate-1 shadow-hand">
+              <h3 className="text-xl font-black text-gray-900 dark:text-white mb-4 underline decoration-accent decoration-wavy">A) Upload a new image</h3>
               <div className="mt-3">
                 <input
                   type="file"
                   accept="image/*"
                   onChange={(e) => setUploadFile(e.target.files?.[0] || null)}
-                  className="block w-full text-sm text-gray-900 dark:text-gray-100 file:mr-4 file:py-2 file:px-4 file:border-sketchy file:bg-accent file:text-white hover:file:bg-indigo-700"
+                  className="block w-full text-sm text-gray-900 dark:text-gray-100 file:mr-4 file:py-2 file:px-4 file:border-sketchy file:bg-accent file:text-white file:font-bold hover:file:bg-indigo-700 cursor-pointer"
                 />
               </div>
 
@@ -360,17 +360,17 @@ export default function TestToolPage() {
                 type="button"
                 onClick={() => void handleUpload()}
                 disabled={uploading || loading || !selectedFlavorId}
-                className="mt-6 w-full py-3 px-6 border-sketchy bg-white dark:bg-zinc-800 text-lg font-bold shadow-hand hover:shadow-hand-hover hover:-translate-y-1 transition-all disabled:opacity-50"
+                className="mt-6 w-full py-3 px-6 border-sketchy bg-white dark:bg-zinc-800 text-lg font-black shadow-hand hover:shadow-hand-hover hover:-translate-y-1 transition-all disabled:opacity-50 text-gray-900 dark:text-white"
               >
                 {uploading ? 'Drawing...' : 'Upload & Generate'}
               </button>
             </div>
 
-            <div className="border-sketchy-soft bg-pastel-pink/10 dark:bg-pink-900/5 p-6 transform -rotate-1">
-              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4 underline decoration-pink-400 decoration-wavy">B) Select an image</h3>
-              <div className="mt-3 max-h-64 overflow-auto custom-scrollbar">
+            <div className="border-sketchy-soft bg-pastel-pink/10 dark:bg-pink-900/10 p-6 transform -rotate-1 shadow-hand">
+              <h3 className="text-xl font-black text-gray-900 dark:text-white mb-4 underline decoration-pink-400 decoration-wavy">B) Select from gallery</h3>
+              <div className="mt-3 max-h-64 overflow-auto custom-scrollbar bg-white/50 dark:bg-black/20 p-2 border-sketchy-soft">
                 {images.length === 0 ? (
-                  <p className="text-sm text-gray-600 dark:text-gray-300 italic">The gallery is empty...</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 italic p-4">The gallery is empty...</p>
                 ) : (
                   <div className="grid grid-cols-3 gap-4">
                     {images.map((img) => {
@@ -383,10 +383,10 @@ export default function TestToolPage() {
                             setSelectedImageId(img.id)
                             setSelectedImageUrl(img.imageUrl)
                           }}
-                          className={`relative overflow-hidden border-sketchy-soft p-1 transition-all ${
+                          className={`relative overflow-hidden border-sketchy-soft p-1 transition-all shadow-sm ${
                             isSelected
-                              ? 'scale-105 border-accent ring-4 ring-accent/20'
-                              : 'grayscale hover:grayscale-0 border-gray-200'
+                              ? 'scale-105 border-accent ring-4 ring-accent/20 rotate-2'
+                              : 'grayscale hover:grayscale-0 border-gray-200 dark:border-gray-700'
                           }`}
                         >
                           {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -400,11 +400,11 @@ export default function TestToolPage() {
 
               <div className="mt-4">
                 {selectedImageId ? (
-                  <p className="text-xs font-mono bg-white dark:bg-zinc-800 p-2 border-sketchy-soft">
-                    ID: {selectedImageId}
+                  <p className="text-[10px] font-mono bg-white dark:bg-zinc-800 p-2 border-sketchy-soft break-all dark:text-gray-300">
+                    SELECTED: {selectedImageId}
                   </p>
                 ) : (
-                  <p className="text-xs text-gray-500 italic">Pick a doodle above!</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 italic">Pick a doodle above!</p>
                 )}
               </div>
             </div>
@@ -413,29 +413,33 @@ export default function TestToolPage() {
           <button
             type="submit"
             disabled={loading || uploading || !selectedFlavorId || !selectedImageId}
-            className="w-full py-4 px-8 border-sketchy bg-accent text-white text-xl font-bold shadow-hand hover:shadow-hand-hover hover:-translate-y-1 transition-all disabled:opacity-50 flex justify-center items-center"
+            className="w-full py-6 px-8 border-sketchy bg-accent hover:bg-indigo-600 dark:hover:bg-indigo-500 text-white text-2xl font-black shadow-hand hover:shadow-hand-hover hover:-translate-y-1 transition-all disabled:opacity-50 flex justify-center items-center gap-4 group"
           >
             {loading ? (
               <>
-                <Loader2 className="mr-3 h-6 w-6 animate-spin" />
-                Thinking...
+                <Loader2 className="h-8 w-8 animate-spin" />
+                <span>THINKING...</span>
               </>
             ) : (
-              '✨ Generate Captions ✨'
+              <>
+                <Sparkles className="h-8 w-8 group-hover:animate-bounce" />
+                <span className="tracking-widest">GENERATE CAPTIONS</span>
+                <Sparkles className="h-8 w-8 group-hover:animate-bounce" />
+              </>
             )}
           </button>
         </form>
 
         {error && (
-          <div className="border-sketchy bg-red-50 dark:bg-red-900/20 p-6 transform -rotate-1">
-            <div className="text-lg text-red-700 dark:text-red-400 font-bold">Oops! {error}</div>
+          <div className="border-sketchy bg-red-50 dark:bg-red-950/30 p-6 transform -rotate-1 shadow-hand border-red-500">
+            <div className="text-lg text-red-700 dark:text-red-400 font-black">Oops! {error}</div>
           </div>
         )}
 
         {results !== null && (
-          <div className="mt-12 animate-in fade-in slide-in-from-bottom-4 duration-500">
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6 flex items-center">
-              <span className="p-2 bg-accent/10 border-sketchy mr-3">📝</span>
+          <div className="mt-16 animate-in fade-in slide-in-from-bottom-8 duration-700">
+            <h2 className="text-3xl font-black text-gray-900 dark:text-white mb-8 flex items-center">
+              <span className="p-3 bg-accent/20 border-sketchy mr-4 shadow-hand transform -rotate-3">📝</span>
               Generated Captions
             </h2>
             <CaptionList captions={results} />

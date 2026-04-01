@@ -3,7 +3,7 @@
 import { createClient } from '@/utils/supabase/client'
 import { useEffect, useState, use } from 'react'
 import { Database } from '@/types/database.types'
-import { ArrowLeft, Plus, Pencil, Trash2, ArrowUp, ArrowDown } from 'lucide-react'
+import { ArrowLeft, Plus, Pencil, Trash2, ArrowUp, ArrowDown, Settings2 } from 'lucide-react'
 import Link from 'next/link'
 
 type HumorFlavor = Database['public']['Tables']['humor_flavors']['Row']
@@ -74,7 +74,6 @@ export default function FlavorDetailsPage({ params }: { params: Promise<{ id: st
         }
       } else {
         const nextOrder = steps.length > 0 ? Math.max(...steps.map((s) => s.order_by)) + 1 : 1
-        // Ensure we don't send an id during insert
         const { id: _unusedId, ...stepDataWithoutId } = newStep as any
         const { error } = await (supabase.from('humor_flavor_steps') as any).insert([
           {
@@ -95,19 +94,16 @@ export default function FlavorDetailsPage({ params }: { params: Promise<{ id: st
   }
 
   const handleDeleteStep = async (stepId: number) => {
-    // Rule: NEVER delete the last remaining step of a flavor
     if (steps.length <= 1) {
-      alert('A flavor must have at least one step. Operation blocked.')
+      alert('A flavor must have at least one step. Keep some ink in the pen!')
       return
     }
 
-    if (confirm('Delete this step?')) {
+    if (confirm('Erase this step from the notebook?')) {
       const { error } = await (supabase.from('humor_flavor_steps') as any).delete().eq('id', stepId)
       if (error) {
         alert(error.message)
       } else {
-        // Rule: ALWAYS maintain correct step ordering after any operation
-        // Re-index remaining steps to ensure they are contiguous
         const remainingSteps = steps.filter(s => s.id !== stepId)
         for (let i = 0; i < remainingSteps.length; i++) {
           const newOrder = i + 1
@@ -128,30 +124,24 @@ export default function FlavorDetailsPage({ params }: { params: Promise<{ id: st
 
     if (otherIndex < 0 || otherIndex >= steps.length) return
 
-    // Swap steps in local array
     const temp = newSteps[index]
     newSteps[index] = newSteps[otherIndex]
     newSteps[otherIndex] = temp
 
-    // Rule: Reassign order_by for ALL steps in that flavor to ensure no duplicates or gaps
     try {
-      // 1. Move everything to temporary negative values to avoid unique constraints
       for (let i = 0; i < newSteps.length; i++) {
         await (supabase.from('humor_flavor_steps') as any)
           .update({ order_by: -(i + 1) })
           .eq('id', newSteps[i].id)
       }
-      
-      // 2. Assign final contiguous positive values
       for (let i = 0; i < newSteps.length; i++) {
         await (supabase.from('humor_flavor_steps') as any)
           .update({ order_by: i + 1 })
           .eq('id', newSteps[i].id)
       }
-      
       fetchData()
     } catch (err) {
-      alert('Error reordering steps')
+      alert('Error shuffling steps')
     }
   }
 
@@ -161,22 +151,32 @@ export default function FlavorDetailsPage({ params }: { params: Promise<{ id: st
     setIsModalOpen(true)
   }
 
-  if (loading && !flavor) return <div>Loading...</div>
+  if (loading && !flavor) return <div className="p-8 text-xl font-bold italic text-gray-500">Sketching flavor details...</div>
 
   return (
-    <div>
-      <div className="flex items-center space-x-4">
-        <Link href="/flavors" className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
-          <ArrowLeft className="h-6 w-6" />
+    <div className="bg-warm-paper min-h-screen p-8">
+      <div className="flex items-center space-x-6 mb-10">
+        <Link href="/flavors" className="p-2 border-sketchy bg-white dark:bg-zinc-800 text-gray-500 hover:text-accent shadow-hand transition-all">
+          <ArrowLeft className="h-6 w-6" strokeWidth={3} />
         </Link>
-        <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">
-          {flavor?.slug} <span className="text-sm font-normal text-gray-500">({flavor?.description})</span>
-        </h1>
+        <div>
+          <h1 className="text-3xl font-black text-gray-900 dark:text-white flex items-center gap-3">
+            <span className="px-3 py-1 border-sketchy bg-pastel-yellow/30 dark:bg-yellow-900/20 transform rotate-1">
+              {flavor?.slug}
+            </span>
+          </h1>
+          <p className="mt-2 text-lg text-gray-600 dark:text-gray-400 italic">{flavor?.description}</p>
+        </div>
       </div>
 
-      <div className="mt-8">
-        <div className="flex items-center justify-between">
-          <h2 className="text-xl font-medium text-gray-900 dark:text-white">Steps</h2>
+      <div className="mt-12 max-w-5xl">
+        <div className="flex items-center justify-between mb-8">
+          <h2 className="text-2xl font-black text-gray-900 dark:text-white flex items-center">
+            <div className="p-2 border-sketchy bg-pastel-blue/30 mr-3">
+              <Settings2 className="h-6 w-6 text-accent" />
+            </div>
+            Pipeline Steps
+          </h2>
           <button
             onClick={() => {
               setEditingStep(null)
@@ -192,142 +192,146 @@ export default function FlavorDetailsPage({ params }: { params: Promise<{ id: st
               })
               setIsModalOpen(true)
             }}
-            className="inline-flex items-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500"
+            className="inline-flex items-center border-sketchy bg-accent px-5 py-2 text-lg font-black text-white shadow-hand hover:shadow-hand-hover hover:-translate-y-1 transition-all"
           >
-            <Plus className="-ml-0.5 mr-1.5 h-5 w-5" />
+            <Plus className="-ml-1 mr-2 h-5 w-5" strokeWidth={3} />
             Add Step
           </button>
         </div>
 
-        <div className="mt-4 space-y-4">
+        <div className="space-y-8">
           {steps.map((step, index) => (
             <div
               key={step.id}
-              className="rounded-lg border border-gray-200 bg-white dark:bg-gray-800 dark:border-gray-700 p-4 shadow-sm"
+              className="border-sketchy bg-white dark:bg-zinc-900 p-6 shadow-hand transform transition-all hover:rotate-0.5"
             >
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between border-b-2 border-sketchy-soft pb-4 mb-6">
                 <div className="flex items-center space-x-4">
-                  <span className="flex h-8 w-8 items-center justify-center rounded-full bg-indigo-100 text-indigo-700 dark:bg-indigo-900 dark:text-indigo-300 font-bold">
+                  <span className="flex h-10 w-10 items-center justify-center border-sketchy bg-pastel-purple/30 dark:bg-purple-900/30 text-xl font-black text-gray-900 dark:text-white">
                     {step.order_by}
                   </span>
                   <div>
-                    <h3 className="text-lg font-medium text-gray-900 dark:text-white">{step.description}</h3>
+                    <h3 className="text-xl font-black text-gray-900 dark:text-white">{step.description}</h3>
                   </div>
                 </div>
-                <div className="flex items-center space-x-2">
+                <div className="flex items-center space-x-3">
                   <button
                     onClick={() => moveStep(index, 'up')}
                     disabled={index === 0}
-                    className="p-1 text-gray-400 hover:text-gray-600 disabled:opacity-30"
+                    className="p-2 border-sketchy-soft bg-white dark:bg-zinc-800 text-gray-400 hover:text-accent disabled:opacity-30 transition-all"
                   >
-                    <ArrowUp className="h-5 w-5" />
+                    <ArrowUp className="h-5 w-5" strokeWidth={2.5} />
                   </button>
                   <button
                     onClick={() => moveStep(index, 'down')}
                     disabled={index === steps.length - 1}
-                    className="p-1 text-gray-400 hover:text-gray-600 disabled:opacity-30"
+                    className="p-2 border-sketchy-soft bg-white dark:bg-zinc-800 text-gray-400 hover:text-accent disabled:opacity-30 transition-all"
                   >
-                    <ArrowDown className="h-5 w-5" />
+                    <ArrowDown className="h-5 w-5" strokeWidth={2.5} />
                   </button>
-                  <button onClick={() => openEditModal(step)} className="p-1 text-gray-400 hover:text-blue-600">
-                    <Pencil className="h-5 w-5" />
+                  <button onClick={() => openEditModal(step)} className="p-2 border-sketchy-soft bg-white dark:bg-zinc-800 text-gray-600 hover:text-blue-500 transition-all">
+                    <Pencil className="h-5 w-5" strokeWidth={2.5} />
                   </button>
-                  <button onClick={() => handleDeleteStep(step.id)} className="p-1 text-gray-400 hover:text-red-600">
-                    <Trash2 className="h-5 w-5" />
+                  <button onClick={() => handleDeleteStep(step.id)} className="p-2 border-sketchy-soft bg-white dark:bg-zinc-800 text-red-400 hover:text-red-600 transition-all">
+                    <Trash2 className="h-5 w-5" strokeWidth={2.5} />
                   </button>
                 </div>
               </div>
-              <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
-                <div className="rounded bg-gray-50 dark:bg-gray-900 p-3">
-                  <span className="text-xs font-bold uppercase text-gray-500">System Prompt</span>
-                  <p className="mt-1 text-sm text-gray-700 dark:text-gray-300 line-clamp-3">{step.llm_system_prompt}</p>
+              
+              <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                <div className="p-4 border-sketchy-soft bg-pastel-yellow/10 dark:bg-zinc-800/50">
+                  <span className="text-xs font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 underline">System Prompt</span>
+                  <p className="mt-3 text-sm text-gray-700 dark:text-gray-300 font-bold leading-relaxed line-clamp-4">{step.llm_system_prompt}</p>
                 </div>
-                <div className="rounded bg-gray-50 dark:bg-gray-900 p-3">
-                  <span className="text-xs font-bold uppercase text-gray-500">User Prompt</span>
-                  <p className="mt-1 text-sm text-gray-700 dark:text-gray-300 line-clamp-3">{step.llm_user_prompt}</p>
+                <div className="p-4 border-sketchy-soft bg-pastel-blue/10 dark:bg-zinc-800/50">
+                  <span className="text-xs font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 underline">User Prompt</span>
+                  <p className="mt-3 text-sm text-gray-700 dark:text-gray-300 font-bold leading-relaxed line-clamp-4">{step.llm_user_prompt}</p>
                 </div>
               </div>
             </div>
           ))}
-          {steps.length === 0 && <p className="text-center text-gray-500 py-8">No steps yet.</p>}
+          {steps.length === 0 && (
+            <div className="border-sketchy bg-pastel-blue/5 p-12 text-center text-xl font-bold italic text-gray-500">
+              No steps found in the draft.
+            </div>
+          )}
         </div>
       </div>
 
       {isModalOpen && (
         <div className="fixed inset-0 z-50 overflow-y-auto">
           <div className="flex min-h-screen items-center justify-center p-4">
-            <div 
-              className="fixed inset-0 bg-gray-500/75 transition-opacity" 
-              onClick={() => setIsModalOpen(false)}
-            ></div>
-            <div className="relative w-full max-w-2xl transform overflow-hidden rounded-lg bg-white dark:bg-gray-800 p-6 shadow-xl transition-all">
-              <h3 className="text-lg font-medium text-gray-900 dark:text-white">
+            <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-sm transition-opacity" onClick={() => setIsModalOpen(false)}></div>
+            <div className="relative w-full max-w-3xl transform border-sketchy bg-white dark:bg-zinc-900 p-8 shadow-hand transition-all rotate-0.5">
+              <h3 className="text-2xl font-black text-gray-900 dark:text-white mb-8 underline decoration-accent decoration-wavy">
                 {editingStep ? 'Edit Step' : 'New Step'}
               </h3>
-              <form onSubmit={handleCreateOrUpdateStep} className="mt-4 space-y-4">
+              <form onSubmit={handleCreateOrUpdateStep} className="space-y-6">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Description</label>
+                  <label className="block text-lg font-bold text-gray-700 dark:text-gray-300 mb-2">Description</label>
                   <input
                     type="text"
                     required
                     value={newStep.description || ''}
                     onChange={(e) => setNewStep({ ...newStep, description: e.target.value })}
-                    className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                    className="block w-full border-sketchy-soft bg-pastel-yellow/10 dark:bg-zinc-800 p-3 text-lg font-bold focus:ring-accent focus:border-accent text-gray-900 dark:text-white"
                   />
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">System Prompt</label>
-                  <textarea
-                    rows={4}
-                    value={newStep.llm_system_prompt || ''}
-                    onChange={(e) => setNewStep({ ...newStep, llm_system_prompt: e.target.value })}
-                    className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">User Prompt</label>
-                  <textarea
-                    rows={4}
-                    value={newStep.llm_user_prompt || ''}
-                    onChange={(e) => setNewStep({ ...newStep, llm_user_prompt: e.target.value })}
-                    className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                  />
-                </div>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Temperature</label>
+                    <label className="block text-lg font-bold text-gray-700 dark:text-gray-300 mb-2">System Prompt</label>
+                    <textarea
+                      rows={6}
+                      value={newStep.llm_system_prompt || ''}
+                      onChange={(e) => setNewStep({ ...newStep, llm_system_prompt: e.target.value })}
+                      className="block w-full border-sketchy-soft bg-pastel-blue/10 dark:bg-zinc-800 p-3 text-sm font-bold focus:ring-accent focus:border-accent text-gray-900 dark:text-white"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-lg font-bold text-gray-700 dark:text-gray-300 mb-2">User Prompt</label>
+                    <textarea
+                      rows={6}
+                      value={newStep.llm_user_prompt || ''}
+                      onChange={(e) => setNewStep({ ...newStep, llm_user_prompt: e.target.value })}
+                      className="block w-full border-sketchy-soft bg-pastel-pink/10 dark:bg-zinc-800 p-3 text-sm font-bold focus:ring-accent focus:border-accent text-gray-900 dark:text-white"
+                    />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-6">
+                  <div>
+                    <label className="block text-lg font-bold text-gray-700 dark:text-gray-300 mb-2">Temperature</label>
                     <input
                       type="number"
                       step="0.1"
                       value={newStep.llm_temperature || 0.7}
                       onChange={(e) => setNewStep({ ...newStep, llm_temperature: parseFloat(e.target.value) })}
-                      className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                      className="block w-full border-sketchy-soft bg-pastel-purple/10 dark:bg-zinc-800 p-3 text-lg font-bold focus:ring-accent focus:border-accent text-gray-900 dark:text-white"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Model ID</label>
+                    <label className="block text-lg font-bold text-gray-700 dark:text-gray-300 mb-2">Model ID</label>
                     <input
                       type="number"
                       value={newStep.llm_model_id || 1}
                       onChange={(e) => setNewStep({ ...newStep, llm_model_id: parseInt(e.target.value) })}
-                      className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                      className="block w-full border-sketchy-soft bg-pastel-green/10 dark:bg-zinc-800 p-3 text-lg font-bold focus:ring-accent focus:border-accent text-gray-900 dark:text-white"
                     />
                   </div>
                 </div>
-                <div className="flex justify-end space-x-3 pt-4">
-                  <button
-                    type="button"
-                    onClick={() => setIsModalOpen(false)}
-                    className="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
-                  >
-                    Cancel
-                  </button>
+                <div className="flex flex-col sm:flex-row-reverse gap-4 pt-6">
                   <button
                     type="submit"
                     disabled={isSubmitting}
-                    className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
+                    className="w-full sm:w-auto border-sketchy bg-accent px-10 py-3 text-xl font-black text-white shadow-hand hover:shadow-hand-hover hover:-translate-y-1 transition-all disabled:opacity-50"
                   >
                     {isSubmitting ? 'Saving...' : (editingStep ? 'Update' : 'Create')}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setIsModalOpen(false)}
+                    className="w-full sm:w-auto border-sketchy bg-white dark:bg-zinc-800 px-10 py-3 text-xl font-black text-gray-700 dark:text-gray-300 shadow-hand hover:shadow-hand-hover transition-all"
+                  >
+                    Cancel
                   </button>
                 </div>
               </form>

@@ -29,8 +29,8 @@ export function CaptionList({ captions, className = '' }: CaptionListProps) {
   // Empty state fallback
   if (!captions || captions.length === 0) {
     return (
-      <div className={`p-12 text-center border-sketchy bg-pastel-blue/20 dark:bg-zinc-800/30 ${className}`}>
-        <p className="text-gray-500 dark:text-gray-400 font-medium italic">
+      <div className={`p-12 text-center border-sketchy bg-pastel-blue/20 dark:bg-zinc-800/50 ${className}`}>
+        <p className="text-gray-500 dark:text-gray-300 font-bold italic">
           No captions found in the sketchpad.
         </p>
       </div>
@@ -38,25 +38,25 @@ export function CaptionList({ captions, className = '' }: CaptionListProps) {
   }
 
   const pastelColors = [
-    'bg-pastel-blue/40 dark:bg-blue-900/20',
-    'bg-pastel-pink/40 dark:bg-pink-900/20',
-    'bg-pastel-purple/40 dark:bg-purple-900/20',
-    'bg-pastel-yellow/40 dark:bg-yellow-900/20',
-    'bg-pastel-green/40 dark:bg-green-900/20',
+    'bg-pastel-blue/60 dark:bg-blue-900/40',
+    'bg-pastel-pink/60 dark:bg-pink-900/40',
+    'bg-pastel-purple/60 dark:bg-purple-900/40',
+    'bg-pastel-yellow/60 dark:bg-yellow-900/40',
+    'bg-pastel-green/60 dark:bg-green-900/40',
   ]
 
   return (
     <div className={`w-full ${className}`}>
-      <ol className="list-decimal list-outside ml-8 space-y-6">
+      <ol className="list-decimal list-outside ml-10 space-y-8">
         {captions.map((caption, index) => (
           <li 
             key={caption.id} 
-            className="pl-2 text-gray-900 dark:text-gray-100 font-bold marker:text-accent dark:marker:text-indigo-400 marker:text-lg"
+            className="pl-4 text-gray-900 dark:text-white font-black marker:text-accent dark:marker:text-accent marker:text-2xl"
           >
-            <div className={`p-5 border-sketchy-soft shadow-hand hover:shadow-hand-hover transition-all duration-200 transform hover:-rotate-1 ${pastelColors[index % pastelColors.length]}`}>
-              <p className="leading-relaxed font-medium text-gray-800 dark:text-gray-200 text-lg">
+            <div className={`p-6 border-sketchy shadow-hand hover:shadow-hand-hover transition-all duration-200 transform hover:-rotate-1 ${pastelColors[index % pastelColors.length]}`}>
+              <p className="leading-relaxed font-bold text-gray-900 dark:text-white text-xl">
                 {caption.content?.trim() || (
-                  <span className="text-gray-400 dark:text-gray-500 italic font-normal">
+                  <span className="text-gray-500 dark:text-gray-400 italic font-normal">
                     [The ink ran out here...]
                   </span>
                 )}

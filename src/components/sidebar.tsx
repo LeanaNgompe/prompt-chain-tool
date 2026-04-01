@@ -43,15 +43,18 @@ export function Sidebar() {
     setTheme('light')
   }
 
-  const themeLabel = mounted ? (theme === 'system' ? 'Theme: System' : `Theme: ${theme === 'dark' ? 'Dark' : 'Light'}`) : 'Theme'
+  const themeLabel = mounted ? (theme === 'system' ? 'System' : theme === 'dark' ? 'Dark' : 'Light') : 'Theme'
 
   return (
-    <div className="flex h-full w-64 flex-col border-r border-gray-200 bg-white text-gray-900 dark:border-gray-800 dark:bg-gray-900 dark:text-white">
-      <div className="flex h-16 items-center justify-center border-b border-gray-200 dark:border-gray-800">
-        <span className="text-xl font-bold">PromptChain Admin</span>
+    <div className="flex h-full w-64 flex-col border-r-2 border-sketchy bg-warm-paper text-foreground">
+      <div className="flex h-20 items-center justify-center border-b-2 border-sketchy bg-pastel-yellow/20">
+        <span className="text-xl font-bold tracking-tight px-4 py-1 border-sketchy bg-white dark:bg-zinc-800 transform -rotate-1">
+          PromptChain ✨
+        </span>
       </div>
-      <div className="flex flex-1 flex-col overflow-y-auto pt-5 pb-4">
-        <nav className="mt-5 flex-1 space-y-1 px-2">
+      
+      <div className="flex flex-1 flex-col overflow-y-auto pt-8 pb-4 px-4">
+        <nav className="flex-1 space-y-4">
           {navigation.map((item) => {
             const isActive = pathname === item.href || pathname.startsWith(item.href + '/')
             return (
@@ -59,18 +62,16 @@ export function Sidebar() {
                 key={item.name}
                 href={item.href}
                 className={cn(
+                  'group flex items-center px-3 py-3 text-sm font-bold border-sketchy-soft transition-all duration-200',
                   isActive
-                    ? 'bg-indigo-100 text-indigo-700 dark:bg-gray-800 dark:text-white'
-                    : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-white',
-                  'group flex items-center rounded-md px-2 py-2 text-sm font-medium'
+                    ? 'bg-accent text-white shadow-hand translate-x-1'
+                    : 'bg-white dark:bg-zinc-800 hover:bg-pastel-blue/30 dark:hover:bg-zinc-700 hover:shadow-hand'
                 )}
               >
                 <item.icon
                   className={cn(
-                    isActive
-                      ? 'text-indigo-600 dark:text-white'
-                      : 'text-gray-500 group-hover:text-gray-700 dark:text-gray-400 dark:group-hover:text-gray-300',
-                    'mr-3 h-6 w-6 flex-shrink-0'
+                    'mr-3 h-5 w-5 flex-shrink-0 transition-colors',
+                    isActive ? 'text-white' : 'text-gray-500 group-hover:text-accent'
                   )}
                 />
                 {item.name}
@@ -79,21 +80,24 @@ export function Sidebar() {
           })}
         </nav>
       </div>
-      <div className="flex border-t border-gray-200 p-4 dark:border-gray-800">
+
+      <div className="p-4 space-y-3 border-t-2 border-sketchy bg-pastel-blue/10">
         <button
           onClick={cycleTheme}
-          className="flex w-full items-center text-gray-700 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white"
+          className="flex w-full items-center justify-between px-3 py-2 text-sm font-bold border-sketchy-soft bg-white dark:bg-zinc-800 hover:shadow-hand transition-all"
         >
-          {theme === 'dark' ? <Sun className="mr-3 h-6 w-6" /> : <Moon className="mr-3 h-6 w-6" />}
-          {themeLabel}
+          <div className="flex items-center">
+            {mounted && (theme === 'dark' ? <Moon className="mr-3 h-4 w-4" /> : <Sun className="mr-3 h-4 w-4 text-orange-400" />)}
+            {themeLabel}
+          </div>
+          <span className="text-[10px] uppercase opacity-50 font-mono">Theme</span>
         </button>
-      </div>
-      <div className="flex border-t border-gray-200 p-4 dark:border-gray-800">
+
         <button
           onClick={handleSignOut}
-          className="flex w-full items-center text-gray-700 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white"
+          className="flex w-full items-center px-3 py-2 text-sm font-bold border-sketchy-soft bg-white dark:bg-zinc-800 text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 hover:shadow-hand transition-all"
         >
-          <LogOut className="mr-3 h-6 w-6 text-gray-500 dark:text-gray-400" />
+          <LogOut className="mr-3 h-4 w-4" />
           Sign Out
         </button>
       </div>

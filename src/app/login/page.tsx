@@ -3,6 +3,7 @@
 import { createClient } from '@/utils/supabase/client'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
+import { Sparkles } from 'lucide-react'
 
 export default function LoginPage() {
   const supabase = createClient()
@@ -24,24 +25,30 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50 dark:bg-gray-900 px-4 py-12 sm:px-6 lg:px-8">
-      <div className="w-full max-w-md space-y-8">
-        <div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900 dark:text-white">
-            PromptChain Admin
+    <div className="flex min-h-screen items-center justify-center bg-warm-paper px-4 py-12 sm:px-6 lg:px-8">
+      <div className="w-full max-w-md space-y-8 border-sketchy bg-white dark:bg-zinc-900 p-10 shadow-hand transform -rotate-1">
+        <div className="text-center">
+          <div className="mx-auto h-16 w-16 bg-pastel-yellow/30 border-sketchy flex items-center justify-center mb-4">
+            <Sparkles className="h-10 w-10 text-accent" />
+          </div>
+          <h2 className="text-4xl font-black text-gray-900 dark:text-white tracking-tight">
+            PromptChain
           </h2>
-          <p className="mt-2 text-center text-sm text-gray-600 dark:text-gray-400">
-            Sign in to your account
+          <p className="mt-4 text-xl font-bold text-gray-600 dark:text-gray-400 italic">
+            Admin Drawing Room
           </p>
         </div>
-        <div className="mt-8 space-y-6">
+        <div className="mt-10">
           <button
             onClick={handleLogin}
             disabled={loading}
-            className="group relative flex w-full justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50"
+            className="group relative flex w-full justify-center border-sketchy bg-accent py-4 px-6 text-xl font-black text-white shadow-hand hover:shadow-hand-hover hover:-translate-y-1 transition-all disabled:opacity-50"
           >
-            {loading ? 'Connecting...' : 'Sign in with Google'}
+            {loading ? 'Opening the door...' : 'Sign in with Google'}
           </button>
+          <p className="mt-6 text-center text-xs font-bold text-gray-400 uppercase tracking-widest">
+            Restricted to Authorized Doodlers
+          </p>
         </div>
       </div>
     </div>
