@@ -29,27 +29,35 @@ export function CaptionList({ captions, className = '' }: CaptionListProps) {
   // Empty state fallback
   if (!captions || captions.length === 0) {
     return (
-      <div className={`p-8 text-center border-2 border-dashed border-gray-200 dark:border-gray-800 rounded-xl bg-gray-50/50 dark:bg-gray-900/30 ${className}`}>
+      <div className={`p-12 text-center border-sketchy bg-pastel-blue/20 dark:bg-zinc-800/30 ${className}`}>
         <p className="text-gray-500 dark:text-gray-400 font-medium italic">
-          No captions available to display.
+          No captions found in the sketchpad.
         </p>
       </div>
     )
   }
 
+  const pastelColors = [
+    'bg-pastel-blue/40 dark:bg-blue-900/20',
+    'bg-pastel-pink/40 dark:bg-pink-900/20',
+    'bg-pastel-purple/40 dark:bg-purple-900/20',
+    'bg-pastel-yellow/40 dark:bg-yellow-900/20',
+    'bg-pastel-green/40 dark:bg-green-900/20',
+  ]
+
   return (
     <div className={`w-full ${className}`}>
-      <ol className="list-decimal list-outside ml-6 space-y-4">
-        {captions.map((caption) => (
+      <ol className="list-decimal list-outside ml-8 space-y-6">
+        {captions.map((caption, index) => (
           <li 
             key={caption.id} 
-            className="pl-2 text-gray-900 dark:text-gray-100 font-medium marker:text-indigo-600 dark:marker:text-indigo-400 marker:font-bold"
+            className="pl-2 text-gray-900 dark:text-gray-100 font-bold marker:text-accent dark:marker:text-indigo-400 marker:text-lg"
           >
-            <div className="p-4 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm hover:border-gray-300 dark:hover:border-gray-600 transition-colors">
-              <p className="leading-relaxed font-normal text-gray-800 dark:text-gray-200">
+            <div className={`p-5 border-sketchy-soft shadow-hand hover:shadow-hand-hover transition-all duration-200 transform hover:-rotate-1 ${pastelColors[index % pastelColors.length]}`}>
+              <p className="leading-relaxed font-medium text-gray-800 dark:text-gray-200 text-lg">
                 {caption.content?.trim() || (
-                  <span className="text-gray-400 dark:text-gray-500 italic">
-                    [No content provided]
+                  <span className="text-gray-400 dark:text-gray-500 italic font-normal">
+                    [The ink ran out here...]
                   </span>
                 )}
               </p>

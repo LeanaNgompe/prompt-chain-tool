@@ -1,26 +1,80 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: "Quicksand", "Inter", sans-serif;
+  
+  --color-pastel-blue: #e0f2fe;
+  --color-pastel-pink: #fce7f3;
+  --color-pastel-purple: #f3e8ff;
+  --color-pastel-yellow: #fefce8;
+  --color-pastel-green: #f0fdf4;
+  
+  --shadow-hand: 4px 4px 0px 0px rgba(0, 0, 0, 0.1);
+  --shadow-hand-hover: 6px 6px 0px 0px rgba(0, 0, 0, 0.15);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+:root {
+  /* Light Mode - Warm Pastel Palette */
+  --background: #fdfbf7;
+  --foreground: #4a4440;
+  --card-bg: #ffffff;
+  --accent: #6366f1;
+  --border-color: #e5e7eb;
+}
+
+.dark {
+  /* Dark Mode - Muted Dark Palette */
+  --background: #1a1a1e;
+  --foreground: #e2e2e9;
+  --card-bg: #252529;
+  --accent: #818cf8;
+  --border-color: #3f3f46;
+}
+
+@layer base {
+  body {
+    background: var(--background);
+    color: var(--foreground);
+    transition: background-color 0.3s ease, color 0.3s ease;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@layer utilities {
+  /* The "Hand-Drawn" irregular border effect */
+  .border-sketchy {
+    border-radius: 255px 15px 225px 15px/15px 225px 15px 255px;
+    border-width: 2px;
+    border-style: solid;
+    border-color: var(--border-color);
+  }
+
+  .border-sketchy-soft {
+    border-radius: 30px 10px 40px 10px/10px 35px 10px 30px;
+    border-width: 2px;
+    border-style: solid;
+    border-color: var(--border-color);
+  }
+
+  .bg-warm-paper {
+    background-color: var(--background);
+    background-image: radial-gradient(#4a444011 1px, transparent 0);
+    background-size: 24px 24px;
+  }
+}
+
+/* Custom scrollbar for playful look */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 10px;
+}
+.dark ::-webkit-scrollbar-thumb {
+  background: #475569;
 }

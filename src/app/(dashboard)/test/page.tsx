@@ -316,23 +316,25 @@ export default function TestToolPage() {
   }
 
   return (
-    <div>
-      <h1 className="text-2xl font-semibold text-gray-900 dark:text-white flex items-center">
-        <FlaskConical className="mr-2 h-6 w-6 text-indigo-500" />
-        Test Tool (Caption Generation)
+    <div className="bg-warm-paper min-h-screen p-4 md:p-8">
+      <h1 className="text-3xl font-bold text-gray-900 dark:text-white flex items-center mb-8">
+        <div className="p-2 border-sketchy bg-pastel-purple/30 mr-4">
+          <FlaskConical className="h-8 w-8 text-accent" />
+        </div>
+        Test Tool <span className="ml-2 font-normal text-gray-500 italic">(Caption Generation)</span>
       </h1>
 
-      <div className="mt-8 max-w-4xl space-y-6">
-        <form onSubmit={handleGenerate} className="space-y-6 rounded-lg bg-white dark:bg-gray-800 p-6 shadow">
+      <div className="max-w-5xl space-y-10">
+        <form onSubmit={handleGenerate} className="space-y-8 border-sketchy bg-white dark:bg-zinc-900 p-8 shadow-hand">
           <div>
-            <label htmlFor="flavor" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+            <label htmlFor="flavor" className="block text-lg font-bold text-gray-700 dark:text-gray-300 mb-2">
               Select Humor Flavor
             </label>
             <select
               id="flavor"
               value={selectedFlavorId}
               onChange={(e) => setSelectedFlavorId(e.target.value)}
-              className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+              className="mt-1 block w-full border-sketchy-soft bg-pastel-yellow/10 dark:bg-zinc-800 p-3 text-lg focus:ring-accent focus:border-accent"
             >
               {flavors.map((f) => (
                 <option key={f.id} value={f.id}>
@@ -342,15 +344,15 @@ export default function TestToolPage() {
             </select>
           </div>
 
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-            <div className="rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 p-4">
-              <h3 className="text-sm font-semibold text-gray-900 dark:text-white">A) Upload a new image</h3>
+          <div className="grid grid-cols-1 gap-10 md:grid-cols-2">
+            <div className="border-sketchy-soft bg-pastel-blue/10 dark:bg-blue-900/5 p-6 transform rotate-1">
+              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4 underline decoration-accent decoration-wavy">A) Upload a new image</h3>
               <div className="mt-3">
                 <input
                   type="file"
                   accept="image/*"
                   onChange={(e) => setUploadFile(e.target.files?.[0] || null)}
-                  className="block w-full text-sm text-gray-900 dark:text-gray-100"
+                  className="block w-full text-sm text-gray-900 dark:text-gray-100 file:mr-4 file:py-2 file:px-4 file:border-sketchy file:bg-accent file:text-white hover:file:bg-indigo-700"
                 />
               </div>
 
@@ -358,19 +360,19 @@ export default function TestToolPage() {
                 type="button"
                 onClick={() => void handleUpload()}
                 disabled={uploading || loading || !selectedFlavorId}
-                className="mt-4 flex w-full justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50"
+                className="mt-6 w-full py-3 px-6 border-sketchy bg-white dark:bg-zinc-800 text-lg font-bold shadow-hand hover:shadow-hand-hover hover:-translate-y-1 transition-all disabled:opacity-50"
               >
-                {uploading ? 'Uploading...' : 'Upload & Generate'}
+                {uploading ? 'Drawing...' : 'Upload & Generate'}
               </button>
             </div>
 
-            <div className="rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 p-4">
-              <h3 className="text-sm font-semibold text-gray-900 dark:text-white">B) Select an existing image</h3>
-              <div className="mt-3 max-h-64 overflow-auto">
+            <div className="border-sketchy-soft bg-pastel-pink/10 dark:bg-pink-900/5 p-6 transform -rotate-1">
+              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4 underline decoration-pink-400 decoration-wavy">B) Select an image</h3>
+              <div className="mt-3 max-h-64 overflow-auto custom-scrollbar">
                 {images.length === 0 ? (
-                  <p className="text-sm text-gray-600 dark:text-gray-300">No images found.</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-300 italic">The gallery is empty...</p>
                 ) : (
-                  <div className="grid grid-cols-3 gap-3">
+                  <div className="grid grid-cols-3 gap-4">
                     {images.map((img) => {
                       const isSelected = img.id === selectedImageId
                       return (
@@ -381,14 +383,14 @@ export default function TestToolPage() {
                             setSelectedImageId(img.id)
                             setSelectedImageUrl(img.imageUrl)
                           }}
-                          className={`relative overflow-hidden rounded-md border p-1 ${
+                          className={`relative overflow-hidden border-sketchy-soft p-1 transition-all ${
                             isSelected
-                              ? 'border-indigo-600 ring-2 ring-indigo-200 dark:ring-indigo-900'
-                              : 'border-gray-200 hover:border-gray-400 dark:border-gray-700 dark:hover:border-gray-500'
+                              ? 'scale-105 border-accent ring-4 ring-accent/20'
+                              : 'grayscale hover:grayscale-0 border-gray-200'
                           }`}
                         >
                           {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img src={img.thumbnailUrl} alt="" className="h-20 w-full rounded-sm object-cover" />
+                          <img src={img.thumbnailUrl} alt="" className="h-20 w-full object-cover" />
                         </button>
                       )
                     })}
@@ -396,13 +398,13 @@ export default function TestToolPage() {
                 )}
               </div>
 
-              <div className="mt-3">
+              <div className="mt-4">
                 {selectedImageId ? (
-                  <p className="text-xs text-gray-600 dark:text-gray-300">
-                    Selected: <span className="font-mono">{selectedImageId}</span>
+                  <p className="text-xs font-mono bg-white dark:bg-zinc-800 p-2 border-sketchy-soft">
+                    ID: {selectedImageId}
                   </p>
                 ) : (
-                  <p className="text-xs text-gray-600 dark:text-gray-300">Select an image to enable generation.</p>
+                  <p className="text-xs text-gray-500 italic">Pick a doodle above!</p>
                 )}
               </div>
             </div>
@@ -411,28 +413,31 @@ export default function TestToolPage() {
           <button
             type="submit"
             disabled={loading || uploading || !selectedFlavorId || !selectedImageId}
-            className="flex w-full justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50"
+            className="w-full py-4 px-8 border-sketchy bg-accent text-white text-xl font-bold shadow-hand hover:shadow-hand-hover hover:-translate-y-1 transition-all disabled:opacity-50 flex justify-center items-center"
           >
             {loading ? (
               <>
-                <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                Generating...
+                <Loader2 className="mr-3 h-6 w-6 animate-spin" />
+                Thinking...
               </>
             ) : (
-              'Generate Captions'
+              '✨ Generate Captions ✨'
             )}
           </button>
         </form>
 
         {error && (
-          <div className="mt-6 rounded-md bg-red-50 dark:bg-red-900/20 p-4">
-            <div className="text-sm text-red-700 dark:text-red-400">{error}</div>
+          <div className="border-sketchy bg-red-50 dark:bg-red-900/20 p-6 transform -rotate-1">
+            <div className="text-lg text-red-700 dark:text-red-400 font-bold">Oops! {error}</div>
           </div>
         )}
 
         {results !== null && (
-          <div className="mt-8 space-y-4">
-            <h2 className="text-xl font-medium text-gray-900 dark:text-white">Generated Captions</h2>
+          <div className="mt-12 animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6 flex items-center">
+              <span className="p-2 bg-accent/10 border-sketchy mr-3">📝</span>
+              Generated Captions
+            </h2>
             <CaptionList captions={results} />
           </div>
         )}
