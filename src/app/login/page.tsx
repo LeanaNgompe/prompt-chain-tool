@@ -42,12 +42,12 @@ export default function LoginPage() {
           <button
             onClick={handleLogin}
             disabled={loading}
-            className="group relative flex w-full justify-center border-sketchy bg-accent py-4 px-6 text-xl font-black text-white shadow-hand hover:shadow-hand-hover hover:-translate-y-1 transition-all disabled:opacity-50"
+            className="group relative flex w-full justify-center border-sketchy bg-accent py-5 px-6 text-2xl font-black text-white shadow-hand hover:shadow-hand-hover hover:-translate-y-1 transition-all disabled:opacity-50"
           >
-            {loading ? 'Opening the door...' : 'Sign in with Google'}
+            {loading ? 'Entering...' : 'LOGIN WITH GOOGLE'}
           </button>
-          <p className="mt-6 text-center text-xs font-bold text-gray-400 uppercase tracking-widest">
-            Restricted to Authorized Doodlers
+          <p className="mt-6 text-center text-xs font-black text-gray-500 uppercase tracking-[0.2em]">
+            Restricted to Authorized Admin Doodlers
           </p>
         </div>
       </div>

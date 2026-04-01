@@ -65,13 +65,13 @@ export function Sidebar() {
                   'group flex items-center px-3 py-3 text-sm font-bold border-sketchy-soft transition-all duration-200',
                   isActive
                     ? 'bg-accent text-white shadow-hand translate-x-1'
-                    : 'bg-white dark:bg-zinc-800 hover:bg-pastel-blue/30 dark:hover:bg-zinc-700 hover:shadow-hand'
+                    : 'bg-white dark:bg-zinc-800 text-gray-700 dark:text-gray-300 hover:bg-accent hover:text-white hover:shadow-hand hover:-translate-y-0.5'
                 )}
               >
                 <item.icon
                   className={cn(
                     'mr-3 h-5 w-5 flex-shrink-0 transition-colors',
-                    isActive ? 'text-white' : 'text-gray-500 group-hover:text-accent'
+                    isActive ? 'text-white' : 'text-gray-500 group-hover:text-white'
                   )}
                 />
                 {item.name}
