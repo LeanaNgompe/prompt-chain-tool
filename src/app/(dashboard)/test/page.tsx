@@ -132,73 +132,92 @@ export default function TestToolPage() {
   }
 
   const extractCaptions = (data: unknown): Caption[] => {
-    if (!data || typeof data !== 'object') return []
-    const payload = data as {
-      captions?: unknown
-      caption?: unknown
-      text?: unknown
-      output?: unknown
+    if (!data) return []
+    
+    // Normalize data into an array for processing
+    let rawItems: unknown[] = []
+    
+    if (Array.isArray(data)) {
+      rawItems = data
+    } else if (typeof data === 'object') {
+      const payload = data as Record<string, unknown>
+      const possibleRaw = payload.captions ?? payload.caption ?? payload.text ?? payload.output
+      if (Array.isArray(possibleRaw)) {
+        rawItems = possibleRaw
+      } else if (typeof possibleRaw === 'string') {
+        // Handle case where it's a string that might be JSON or newline-separated
+        const trimmed = possibleRaw.trim()
+        if (trimmed.startsWith('[') && trimmed.endsWith(']')) {
+          try {
+            const parsed = JSON.parse(trimmed)
+            rawItems = Array.isArray(parsed) ? parsed : [parsed]
+          } catch {
+            rawItems = trimmed.split('\n')
+          }
+        } else {
+          rawItems = trimmed.split('\n')
+        }
+      } else {
+        // If it's just the object itself without the known keys
+        rawItems = [data]
+      }
+    } else if (typeof data === 'string') {
+      const trimmed = data.trim()
+      if (trimmed.startsWith('[') && trimmed.endsWith(']')) {
+        try {
+          const parsed = JSON.parse(trimmed)
+          rawItems = Array.isArray(parsed) ? parsed : [parsed]
+        } catch {
+          rawItems = trimmed.split('\n')
+        }
+      } else {
+        rawItems = trimmed.split('\n')
+      }
     }
 
-    const raw = payload.captions ?? payload.caption ?? payload.text ?? payload.output
     const normalizeLine = (line: string) =>
       line
         .replace(/^\s*(?:\d+[\).\-\:]\s*|[-*•]\s*)/, '')
         .replace(/^["']|["']$/g, '')
         .trim()
 
-    if (Array.isArray(raw)) {
-      const items: Caption[] = []
-      raw.forEach((item, index) => {
-        if (typeof item === 'object' && item !== null && 'content' in item) {
-          const obj = item as Record<string, unknown>
-          items.push({
+    const results: Caption[] = []
+    
+    rawItems.forEach((item, index) => {
+      if (!item) return
+
+      if (typeof item === 'object') {
+        const obj = item as Record<string, unknown>
+        // Extract content field if it exists, otherwise use stringified object (fallback)
+        const contentRaw = obj.content ?? obj.text ?? obj.caption ?? obj.output
+        
+        if (contentRaw !== undefined && contentRaw !== null) {
+          results.push({
             id: String(obj.id ?? index),
-            content: normalizeLine(String(obj.content ?? '')),
+            content: normalizeLine(String(contentRaw)),
             image_id: String(obj.image_id ?? ''),
             humor_flavor_id: obj.humor_flavor_id as number | string | undefined,
           })
-        } else {
-          const content = normalizeLine(String(item))
-          if (content) {
-            items.push({ id: String(index), content })
+        } else if (Object.keys(obj).length > 0) {
+          // If no specific content key, but it's an object, check if any value looks like a caption
+          // This is a safety fallback for unexpected object shapes
+          const firstStringValue = Object.values(obj).find(v => typeof v === 'string')
+          if (firstStringValue) {
+            results.push({
+              id: String(obj.id ?? index),
+              content: normalizeLine(String(firstStringValue)),
+            })
           }
         }
-      })
-      return items
-    }
-
-    if (typeof raw === 'string') {
-      const asJson = raw.trim()
-      if (asJson.startsWith('[') && asJson.endsWith(']')) {
-        try {
-          const parsed = JSON.parse(asJson) as unknown
-          if (Array.isArray(parsed)) {
-            const items: Caption[] = []
-            parsed.forEach((item, index) => {
-              const content = normalizeLine(String(item))
-              if (content) {
-                items.push({ id: String(index), content })
-              }
-            })
-            return items
-          }
-        } catch {
-          // Fall back to newline parsing.
+      } else {
+        const content = normalizeLine(String(item))
+        if (content) {
+          results.push({ id: String(index), content })
         }
       }
+    })
 
-      const lines = raw.split('\n')
-      const items: Caption[] = []
-      lines.forEach((line, index) => {
-        const content = normalizeLine(line)
-        if (content) {
-          items.push({ id: String(index), content })
-        }
-      })
-      return items
-    }
-    return []
+    return results
   }
 
   const runGeneration = async () => {
