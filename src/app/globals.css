@@ -3,6 +3,10 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-accent: var(--accent);
+  --color-card-bg: var(--card-bg);
+  --color-border-color: var(--border-color);
+  
   --font-sans: "Quicksand", "Inter", sans-serif;
   
   --color-pastel-blue: #e0f2fe;
@@ -20,8 +24,8 @@
   --background: #fdfbf7;
   --foreground: #4a4440;
   --card-bg: #ffffff;
-  --accent: #6366f1;
-  --border-color: #e5e7eb;
+  --accent: #4f46e5;
+  --border-color: #4a4440;
 }
 
 .dark {
@@ -30,7 +34,7 @@
   --foreground: #e2e2e9;
   --card-bg: #252529;
   --accent: #818cf8;
-  --border-color: #3f3f46;
+  --border-color: #e2e2e9;
 }
 
 @layer base {
@@ -45,7 +49,7 @@
   /* The "Hand-Drawn" irregular border effect */
   .border-sketchy {
     border-radius: 255px 15px 225px 15px/15px 225px 15px 255px;
-    border-width: 2px;
+    border-width: 2.5px;
     border-style: solid;
     border-color: var(--border-color);
   }
