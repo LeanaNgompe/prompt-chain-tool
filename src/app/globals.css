@@ -30,11 +30,11 @@
 
 .dark {
   /* Dark Mode - Muted Dark Palette */
-  --background: #1a1a1e;
-  --foreground: #e2e2e9;
-  --card-bg: #252529;
-  --accent: #818cf8;
-  --border-color: #e2e2e9;
+  --background: #121214;
+  --foreground: #ffffff;
+  --card-bg: #1c1c1f;
+  --accent: #a5b4fc;
+  --border-color: #ffffff;
 }
 
 @layer base {
