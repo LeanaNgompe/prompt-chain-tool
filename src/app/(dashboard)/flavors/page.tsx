@@ -111,10 +111,10 @@ export default function FlavorsPage() {
   }
 
   return (
-    <div className="bg-warm-paper min-h-screen p-8">
+    <div className="bg-warm-paper min-h-screen p-8 text-foreground">
       <div className="flex items-center justify-between mb-10">
-        <h1 className="text-3xl font-black text-gray-900 dark:text-white flex items-center">
-          <div className="p-2 border-sketchy bg-pastel-pink/30 mr-4 shadow-hand">
+        <h1 className="text-3xl font-black flex items-center underline decoration-accent decoration-wavy underline-offset-8">
+          <div className="p-2 border-sketchy bg-pastel-purple/30 mr-4 shadow-hand">
             <MessageSquareQuote className="h-8 w-8 text-accent" />
           </div>
           Humor Flavors
@@ -136,8 +136,8 @@ export default function FlavorsPage() {
         <table className="min-w-full divide-y-2 divide-sketchy">
           <thead className="bg-pastel-blue/20 dark:bg-blue-900/20">
             <tr>
-              <th className="py-4 pl-6 pr-3 text-left text-lg font-black text-gray-900 dark:text-white uppercase tracking-wider">Slug</th>
-              <th className="px-3 py-4 text-left text-lg font-black text-gray-900 dark:text-white uppercase tracking-wider">Description</th>
+              <th className="py-4 pl-6 pr-3 text-left text-lg font-black uppercase tracking-wider">Slug</th>
+              <th className="px-3 py-4 text-left text-lg font-black uppercase tracking-wider">Description</th>
               <th className="relative py-4 pl-3 pr-6">
                 <span className="sr-only">Actions</span>
               </th>
@@ -146,19 +146,19 @@ export default function FlavorsPage() {
           <tbody className="divide-y-2 divide-sketchy bg-white dark:bg-zinc-900">
             {loading ? (
               <tr>
-                <td colSpan={3} className="py-10 text-center text-xl font-bold text-gray-500 italic">Doodling...</td>
+                <td colSpan={3} className="py-10 text-center text-xl font-bold opacity-50 italic">Doodling...</td>
               </tr>
             ) : flavors.length === 0 ? (
               <tr>
-                <td colSpan={3} className="py-10 text-center text-xl font-bold text-gray-500 italic">No flavors found in the notebook.</td>
+                <td colSpan={3} className="py-10 text-center text-xl font-bold opacity-50 italic">No flavors found in the notebook.</td>
               </tr>
             ) : (
               flavors.map((flavor) => (
                 <tr key={flavor.id} className="hover:bg-pastel-yellow/10 dark:hover:bg-zinc-800 transition-colors">
-                  <td className="whitespace-nowrap py-5 pl-6 pr-3 text-lg font-bold text-gray-900 dark:text-white">
+                  <td className="whitespace-nowrap py-5 pl-6 pr-3 text-lg font-bold">
                     <span className="px-2 py-1 border-sketchy-soft bg-pastel-yellow/20 dark:bg-yellow-900/20">{flavor.slug}</span>
                   </td>
-                  <td className="px-3 py-5 text-lg text-gray-700 dark:text-gray-300 font-medium">
+                  <td className="px-3 py-5 text-lg font-medium opacity-80">
                     {flavor.description}
                   </td>
                   <td className="relative whitespace-nowrap py-5 pl-3 pr-6 text-right font-bold">
@@ -172,7 +172,7 @@ export default function FlavorsPage() {
                       </Link>
                       <button
                         onClick={() => openEditModal(flavor)}
-                        className="p-2 border-sketchy-soft bg-white dark:bg-zinc-800 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:shadow-hand transition-all"
+                        className="p-2 border-sketchy-soft bg-white dark:bg-zinc-800 text-gray-500 dark:text-gray-400 hover:text-accent hover:shadow-hand transition-all"
                         title="Edit"
                       >
                         <Pencil className="h-5 w-5" strokeWidth={2.5} />
@@ -198,29 +198,29 @@ export default function FlavorsPage() {
           <div className="flex min-h-screen items-center justify-center p-4">
             <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-sm transition-opacity" onClick={() => setIsModalOpen(false)}></div>
 
-            <div className="relative transform border-sketchy bg-white dark:bg-zinc-900 p-8 shadow-hand transition-all sm:w-full sm:max-w-lg rotate-1">
+            <div className="relative transform border-sketchy bg-white dark:bg-zinc-900 p-8 shadow-hand transition-all sm:w-full sm:max-w-lg rotate-1 text-foreground">
               <form onSubmit={handleCreateOrUpdate}>
-                <h3 className="text-2xl font-black text-gray-900 dark:text-white mb-6 underline decoration-accent decoration-wavy">
+                <h3 className="text-2xl font-black mb-6 underline decoration-accent decoration-wavy">
                   {editingFlavor ? 'Edit Flavor' : 'New Flavor'}
                 </h3>
                 <div className="space-y-6">
                   <div>
-                    <label htmlFor="slug" className="block text-lg font-bold text-gray-700 dark:text-gray-300 mb-2">Slug</label>
+                    <label htmlFor="slug" className="block text-lg font-bold mb-2 opacity-80">Slug</label>
                     <input
                       type="text"
                       required
                       value={newFlavor.slug}
                       onChange={(e) => setNewFlavor({ ...newFlavor, slug: e.target.value })}
-                      className="block w-full border-sketchy-soft bg-pastel-yellow/10 dark:bg-zinc-800 p-3 text-lg font-bold focus:ring-accent focus:border-accent text-gray-900 dark:text-white"
+                      className="block w-full border-sketchy-soft bg-pastel-yellow/10 dark:bg-zinc-800 p-3 text-lg font-bold focus:ring-accent focus:border-accent text-foreground"
                     />
                   </div>
                   <div>
-                    <label htmlFor="description" className="block text-lg font-bold text-gray-700 dark:text-gray-300 mb-2">Description</label>
+                    <label htmlFor="description" className="block text-lg font-bold mb-2 opacity-80">Description</label>
                     <textarea
                       rows={3}
                       value={newFlavor.description}
                       onChange={(e) => setNewFlavor({ ...newFlavor, description: e.target.value })}
-                      className="block w-full border-sketchy-soft bg-pastel-blue/10 dark:bg-zinc-800 p-3 text-lg font-bold focus:ring-accent focus:border-accent text-gray-900 dark:text-white"
+                      className="block w-full border-sketchy-soft bg-pastel-blue/10 dark:bg-zinc-800 p-3 text-lg font-bold focus:ring-accent focus:border-accent text-foreground"
                     />
                   </div>
                 </div>
@@ -234,7 +234,7 @@ export default function FlavorsPage() {
                   <button
                     type="button"
                     onClick={() => setIsModalOpen(false)}
-                    className="w-full sm:w-auto border-sketchy bg-white dark:bg-zinc-800 px-8 py-3 text-lg font-black text-gray-700 dark:text-gray-300 shadow-hand hover:shadow-hand-hover transition-all"
+                    className="w-full sm:w-auto border-sketchy bg-white dark:bg-zinc-800 px-8 py-3 text-lg font-black opacity-70 shadow-hand hover:shadow-hand-hover transition-all"
                   >
                     Cancel
                   </button>
