@@ -1,249 +1,40 @@
-'use client'
+import { LayoutDashboard } from 'lucide-react'
 
-import { createClient } from '@/utils/supabase/client'
-import { useEffect, useState } from 'react'
-import { Database } from '@/types/database.types'
-import Link from 'next/link'
-import { Plus, Pencil, Trash2, ExternalLink, MessageSquareQuote } from 'lucide-react'
-
-type HumorFlavor = Database['public']['Tables']['humor_flavors']['Row']
-
-export default function FlavorsPage() {
-  const supabase = createClient()
-  const [flavors, setFlavors] = useState<HumorFlavor[]>([])
-  const [loading, setLoading] = useState(true)
-  const [isModalOpen, setIsModalOpen] = useState(false)
-  const [editingFlavor, setEditingFlavor] = useState<HumorFlavor | null>(null)
-  const [newFlavor, setNewFlavor] = useState({ slug: '', description: '' })
-  const [isSubmitting, setIsSubmitting] = useState(false)
-
-  const fetchFlavors = async () => {
-    setLoading(true)
-    const { data, error } = await supabase.from('humor_flavors').select('*').order('slug')
-    if (error) {
-      console.error('Error fetching flavors:', error.message)
-    } else {
-      setFlavors(data || [])
-    }
-    setLoading(false)
-  }
-
-  useEffect(() => {
-    fetchFlavors()
-  }, [])
-
-  const handleCreateOrUpdate = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (isSubmitting) return
-    setIsSubmitting(true)
-
-    try {
-      if (editingFlavor) {
-        const { error } = await (supabase.from('humor_flavors') as any)
-          .update({ slug: newFlavor.slug, description: newFlavor.description })
-          .eq('id', editingFlavor.id)
-        if (error) alert(error.message)
-        else {
-          setIsModalOpen(false)
-          setEditingFlavor(null)
-          setNewFlavor({ slug: '', description: '' })
-          fetchFlavors()
-        }
-      } else {
-        const { data, error } = await (supabase.from('humor_flavors') as any)
-          .insert([{ slug: newFlavor.slug, description: newFlavor.description }])
-          .select()
-        
-        if (error) {
-          alert(error.message)
-        } else if (data && data[0]) {
-          const createdFlavor = data[0]
-          const { error: stepError } = await (supabase.from('humor_flavor_steps') as any)
-            .insert([{
-              humor_flavor_id: createdFlavor.id,
-              order_by: 1,
-              description: 'Initial Generation',
-              llm_system_prompt: 'You are a helpful assistant.',
-              llm_user_prompt: 'Generate a response based on the input.',
-              llm_temperature: 0.7,
-              llm_model_id: 1,
-              llm_input_type_id: 1,
-              llm_output_type_id: 1,
-              humor_flavor_step_type_id: 1
-            }])
-
-          if (stepError) {
-            alert(`Flavor created but failed to create initial step: ${stepError.message}.`)
-            fetchFlavors()
-          } else {
-            setIsModalOpen(false)
-            setNewFlavor({ slug: '', description: '' })
-            fetchFlavors()
-          }
-        }
-      }
-    } finally {
-      setIsSubmitting(false)
-    }
-  }
-
-  const handleDelete = async (id: number) => {
-    if (confirm('Are you sure you want to delete this flavor? All associated steps will be deleted.')) {
-      const { error: stepsError } = await (supabase.from('humor_flavor_steps') as any)
-        .delete()
-        .eq('humor_flavor_id', id)
-      
-      if (stepsError) {
-        alert(`Failed to delete steps: ${stepsError.message}`)
-        return
-      }
-
-      const { error } = await (supabase.from('humor_flavors') as any).delete().eq('id', id)
-      if (error) alert(error.message)
-      else fetchFlavors()
-    }
-  }
-
-  const openEditModal = (flavor: HumorFlavor) => {
-    setEditingFlavor(flavor)
-    setNewFlavor({ slug: flavor.slug, description: flavor.description || '' })
-    setIsModalOpen(true)
-  }
-
+export default function DashboardPage() {
   return (
-    <div className="bg-warm-paper min-h-screen p-8 text-foreground">
-      <div className="flex items-center justify-between mb-10">
-        <h1 className="text-3xl font-black flex items-center underline decoration-accent decoration-wavy underline-offset-8">
-          <div className="p-2 border-sketchy bg-pastel-purple/30 mr-4 shadow-hand">
-            <MessageSquareQuote className="h-8 w-8 text-accent" />
+    <div className="bg-warm-paper min-h-full p-8 text-foreground">
+      <h1 className="text-3xl font-black flex items-center mb-10 underline decoration-accent decoration-wavy underline-offset-8">
+        <div className="p-2 border-sketchy bg-pastel-purple/30 mr-4 shadow-hand">
+          <LayoutDashboard className="h-8 w-8 text-accent" />
+        </div>
+        Dashboard
+      </h1>
+      
+      <div className="max-w-3xl space-y-8">
+        <div className="border-sketchy bg-white dark:bg-zinc-900 p-8 shadow-hand transform rotate-1">
+          <h2 className="text-xl font-bold text-accent mb-4">Welcome back! ✨</h2>
+          <p className="text-lg leading-relaxed text-black dark:text-black font-bold">
+            Welcome to the <span className="font-black px-1 bg-pastel-yellow/30">Humor Flavor Prompt Chain Tool Admin</span>. 
+            This is your workspace for crafting the perfect AI humor.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div className="border-sketchy-soft bg-pastel-blue/10 dark:bg-blue-900/5 p-6 transform -rotate-1">
+            <h3 className="font-bold text-lg mb-2">Flavors 📝</h3>
+            <p className="opacity-80">
+              Manage your humor categories and the specific steps AI takes to generate captions.
+            </p>
           </div>
-          Humor Flavors
-        </h1>
-        <button
-          onClick={() => {
-            setEditingFlavor(null)
-            setNewFlavor({ slug: '', description: '' })
-            setIsModalOpen(true)
-          }}
-          className="inline-flex items-center border-sketchy bg-accent px-6 py-3 text-lg font-black text-white shadow-hand hover:shadow-hand-hover hover:-translate-y-1 transition-all"
-        >
-          <Plus className="-ml-1 mr-2 h-6 w-6" strokeWidth={3} />
-          New Flavor
-        </button>
-      </div>
-
-      <div className="border-sketchy bg-white dark:bg-zinc-900 shadow-hand overflow-hidden transform rotate-0.5">
-        <table className="min-w-full divide-y-2 divide-sketchy">
-          <thead className="bg-pastel-blue/20 dark:bg-blue-900/20">
-            <tr>
-              <th className="py-4 pl-6 pr-3 text-left text-lg font-black uppercase tracking-wider text-black dark:text-white">Slug</th>
-              <th className="px-3 py-4 text-left text-lg font-black uppercase tracking-wider text-black dark:text-white">Description</th>
-              <th className="relative py-4 pl-3 pr-6">
-                <span className="sr-only">Actions</span>
-              </th>
-            </tr>
-          </thead>
-          <tbody className="divide-y-2 divide-sketchy bg-white dark:bg-zinc-900">
-            {loading ? (
-              <tr>
-                <td colSpan={3} className="py-10 text-center text-xl font-bold opacity-50 italic text-black dark:text-white">Doodling...</td>
-              </tr>
-            ) : flavors.length === 0 ? (
-              <tr>
-                <td colSpan={3} className="py-10 text-center text-xl font-bold opacity-50 italic text-black dark:text-white">No flavors found in the notebook.</td>
-              </tr>
-            ) : (
-              flavors.map((flavor) => (
-                <tr key={flavor.id} className="hover:bg-pastel-yellow/10 dark:hover:bg-zinc-800 transition-colors">
-                  <td className="whitespace-nowrap py-5 pl-6 pr-3 text-lg font-bold text-black dark:text-black">
-                    <span className="px-2 py-1 border-sketchy-soft bg-pastel-yellow/20">{flavor.slug}</span>
-                  </td>
-                  <td className="px-3 py-5 text-lg font-medium text-black dark:text-black">
-                    {flavor.description}
-                  </td>
-                  <td className="relative whitespace-nowrap py-5 pl-3 pr-6 text-right font-bold">
-                    <div className="flex justify-end space-x-4">
-                      <Link
-                        href={`/flavors/${flavor.id}`}
-                        className="p-2 border-sketchy-soft bg-white dark:bg-zinc-800 text-accent hover:shadow-hand transition-all"
-                        title="View Details"
-                      >
-                        <ExternalLink className="h-5 w-5" strokeWidth={2.5} />
-                      </Link>
-                      <button
-                        onClick={() => openEditModal(flavor)}
-                        className="p-2 border-sketchy-soft bg-white dark:bg-zinc-800 text-gray-500 dark:text-gray-400 hover:text-accent hover:shadow-hand transition-all"
-                        title="Edit"
-                      >
-                        <Pencil className="h-5 w-5" strokeWidth={2.5} />
-                      </button>
-                      <button
-                        onClick={() => handleDelete(flavor.id)}
-                        className="p-2 border-sketchy-soft bg-white dark:bg-zinc-800 text-red-500 hover:text-red-700 hover:shadow-hand transition-all"
-                        title="Delete"
-                      >
-                        <Trash2 className="h-5 w-5" strokeWidth={2.5} />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
-
-      {isModalOpen && (
-        <div className="fixed inset-0 z-50 overflow-y-auto">
-          <div className="flex min-h-screen items-center justify-center p-4">
-            <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-sm transition-opacity" onClick={() => setIsModalOpen(false)}></div>
-
-            <div className="relative transform border-sketchy bg-white dark:bg-zinc-900 p-8 shadow-hand transition-all sm:w-full sm:max-w-lg rotate-1 text-foreground">
-              <form onSubmit={handleCreateOrUpdate}>
-                <h3 className="text-2xl font-black mb-6 underline decoration-accent decoration-wavy">
-                  {editingFlavor ? 'Edit Flavor' : 'New Flavor'}
-                </h3>
-                <div className="space-y-6">
-                  <div>
-                    <label htmlFor="slug" className="block text-lg font-bold mb-2 opacity-80">Slug</label>
-                    <input
-                      type="text"
-                      required
-                      value={newFlavor.slug}
-                      onChange={(e) => setNewFlavor({ ...newFlavor, slug: e.target.value })}
-                      className="block w-full border-sketchy-soft bg-pastel-yellow/10 dark:bg-zinc-800 p-3 text-lg font-bold focus:ring-accent focus:border-accent text-foreground"
-                    />
-                  </div>
-                  <div>
-                    <label htmlFor="description" className="block text-lg font-bold mb-2 opacity-80">Description</label>
-                    <textarea
-                      rows={3}
-                      value={newFlavor.description}
-                      onChange={(e) => setNewFlavor({ ...newFlavor, description: e.target.value })}
-                      className="block w-full border-sketchy-soft bg-pastel-blue/10 dark:bg-zinc-800 p-3 text-lg font-bold focus:ring-accent focus:border-accent text-foreground"
-                    />
-                  </div>
-                </div>
-                <div className="mt-8 flex flex-col sm:flex-row-reverse gap-4">
-                  <button
-                    type="submit"
-                    className="w-full sm:w-auto border-sketchy bg-accent px-8 py-3 text-lg font-black text-white shadow-hand hover:shadow-hand-hover hover:-translate-y-1 transition-all"
-                  >
-                    {editingFlavor ? 'Save' : 'Create'}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setIsModalOpen(false)}
-                    className="w-full sm:w-auto border-sketchy bg-white dark:bg-zinc-800 px-8 py-3 text-lg font-black opacity-70 shadow-hand hover:shadow-hand-hover transition-all"
-                  >
-                    Cancel
-                  </button>
-                </div>
-              </form>
-            </div>
+          
+          <div className="border-sketchy-soft bg-pastel-pink/10 dark:bg-pink-900/5 p-6 transform rotate-1">
+            <h3 className="font-bold text-lg mb-2">Testing 🧪</h3>
+            <p className="opacity-80">
+              Run real-time tests on your humor pipeline with different images.
+            </p>
           </div>
         </div>
-      )}
+      </div>
     </div>
   )
 }
