@@ -29,11 +29,11 @@
 }
 
 .dark {
-  /* Dark Mode - Muted Dark Palette */
-  --background: #121214;
+  /* Dark Mode - Muted Dark Palette (Reverted) */
+  --background: #1a1a1e;
   --foreground: #ffffff;
-  --card-bg: #1c1c1f;
-  --accent: #a5b4fc;
+  --card-bg: #252529;
+  --accent: #818cf8;
   --border-color: #ffffff;
 }
 

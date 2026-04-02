@@ -295,10 +295,7 @@ export default function TestToolPage() {
       setSelectedImageId(newId)
       setSelectedImageUrl(String(data.imageUrl))
 
-      // Clear upload file so it shows the selected/uploaded view
       setUploadFile(null)
-
-      // Generate captions immediately after upload using the fresh ID
       await runGeneration(newId)
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Upload failed.')
@@ -317,7 +314,7 @@ export default function TestToolPage() {
 
   return (
     <div className="bg-warm-paper min-h-screen p-4 md:p-8 text-foreground font-sans">
-      <h1 className="text-3xl font-black flex items-center mb-10 underline decoration-accent decoration-wavy underline-offset-8">
+      <h1 className="text-3xl font-black flex items-center mb-10 text-foreground underline decoration-accent decoration-wavy underline-offset-8">
         <div className="p-2 border-sketchy bg-pastel-purple/30 mr-4 shadow-hand">
           <FlaskConical className="h-8 w-8 text-accent" />
         </div>
@@ -327,7 +324,7 @@ export default function TestToolPage() {
       <div className="max-w-5xl space-y-10">
         <form onSubmit={handleGenerate} className="space-y-8 border-sketchy bg-white dark:bg-zinc-900 p-8 shadow-hand text-foreground">
           <div>
-            <label htmlFor="flavor" className="block text-xl font-black mb-2 underline decoration-pastel-yellow decoration-4">
+            <label htmlFor="flavor" className="block text-xl font-black mb-2 underline decoration-pastel-yellow decoration-4 text-foreground">
               Step 1: Select Humor Flavor
             </label>
             <select
@@ -345,9 +342,8 @@ export default function TestToolPage() {
           </div>
 
           <div className="grid grid-cols-1 gap-10 md:grid-cols-2">
-            {/* A) UPLOAD SECTION */}
             <div className="border-sketchy-soft bg-pastel-blue/10 dark:bg-blue-900/10 p-6 transform rotate-1 shadow-hand text-foreground min-h-[350px] flex flex-col">
-              <h3 className="text-xl font-black mb-4 underline decoration-accent decoration-wavy">A) Upload a new image</h3>
+              <h3 className="text-xl font-black mb-4 underline decoration-accent decoration-wavy text-foreground">A) Upload a new image</h3>
               
               {selectedImageUrl && !images.some(img => img.imageUrl === selectedImageUrl) ? (
                 <div className="flex-1 flex flex-col items-center justify-center space-y-4">
@@ -397,9 +393,8 @@ export default function TestToolPage() {
               )}
             </div>
 
-            {/* B) GALLERY SECTION */}
             <div className="border-sketchy-soft bg-pastel-pink/10 dark:bg-pink-900/10 p-6 transform -rotate-1 shadow-hand text-foreground min-h-[350px] flex flex-col">
-              <h3 className="text-xl font-black mb-4 underline decoration-pink-400 decoration-wavy">B) Select from gallery</h3>
+              <h3 className="text-xl font-black mb-4 underline decoration-pink-400 decoration-wavy text-foreground">B) Select from gallery</h3>
               
               {selectedImageUrl && images.some(img => img.imageUrl === selectedImageUrl) ? (
                 <div className="flex-1 flex flex-col items-center justify-center space-y-4">
@@ -481,11 +476,10 @@ export default function TestToolPage() {
             </h2>
             <CaptionList captions={results} />
             
-            {/* NEW IMAGE OPTION AT BOTTOM */}
             <div className="mt-12 text-center">
               <button 
                 onClick={resetSelection}
-                className="inline-flex items-center gap-3 border-sketchy bg-white dark:bg-zinc-800 px-8 py-4 text-xl font-black shadow-hand hover:shadow-hand-hover hover:-translate-y-1 transition-all"
+                className="inline-flex items-center gap-3 border-sketchy bg-white dark:bg-zinc-800 px-8 py-4 text-xl font-black shadow-hand hover:shadow-hand-hover hover:-translate-y-1 transition-all text-foreground"
               >
                 <Upload size={24} strokeWidth={3} className="text-accent" />
                 START A NEW SKETCH
