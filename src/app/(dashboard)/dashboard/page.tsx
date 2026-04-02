@@ -11,10 +11,10 @@ export default function DashboardPage() {
       </h1>
       
       <div className="max-w-3xl space-y-8">
-        <div className="border-sketchy bg-white dark:bg-zinc-900 p-8 shadow-hand transform rotate-1">
+        <div className="border-sketchy bg-card-bg p-8 shadow-hand transform rotate-1">
           <h2 className="text-xl font-bold text-accent mb-4">Welcome back! ✨</h2>
-          <p className="text-lg leading-relaxed text-black dark:text-black font-bold">
-            Welcome to the <span className="font-black px-1 bg-pastel-yellow/30">Humor Flavor Prompt Chain Tool Admin</span>. 
+          <p className="text-lg leading-relaxed font-bold">
+            Welcome to the <span className="font-black px-1 bg-pastel-yellow/30 dark:bg-yellow-900/20">Humor Flavor Prompt Chain Tool Admin</span>. 
             This is your workspace for crafting the perfect AI humor.
           </p>
         </div>

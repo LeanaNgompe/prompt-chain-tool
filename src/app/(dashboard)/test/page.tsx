@@ -322,7 +322,7 @@ export default function TestToolPage() {
       </h1>
 
       <div className="max-w-5xl space-y-10">
-        <form onSubmit={handleGenerate} className="space-y-8 border-sketchy bg-white dark:bg-zinc-900 p-8 shadow-hand text-foreground">
+        <form onSubmit={handleGenerate} className="space-y-8 border-sketchy bg-card-bg p-8 shadow-hand text-foreground">
           <div>
             <label htmlFor="flavor" className="block text-xl font-black mb-2 underline decoration-pastel-yellow decoration-4 text-foreground">
               Step 1: Select Humor Flavor
@@ -334,7 +334,7 @@ export default function TestToolPage() {
               className="mt-1 block w-full border-sketchy-soft bg-pastel-yellow/20 dark:bg-zinc-800 p-4 text-xl font-bold focus:ring-accent focus:border-accent text-foreground"
             >
               {flavors.map((f) => (
-                <option key={f.id} value={f.id} className="bg-white dark:bg-zinc-800 text-foreground">
+                <option key={f.id} value={f.id} className="bg-card-bg text-foreground">
                   {f.slug}
                 </option>
               ))}
@@ -347,7 +347,7 @@ export default function TestToolPage() {
               
               {selectedImageUrl && !images.some(img => img.imageUrl === selectedImageUrl) ? (
                 <div className="flex-1 flex flex-col items-center justify-center space-y-4">
-                  <div className="border-sketchy bg-white p-2 shadow-hand transform -rotate-2">
+                  <div className="border-sketchy bg-card-bg p-2 shadow-hand transform -rotate-2">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img src={selectedImageUrl} alt="Uploaded preview" className="max-h-48 rounded-sm object-contain" />
                   </div>
@@ -384,7 +384,7 @@ export default function TestToolPage() {
                     type="button"
                     onClick={() => void handleUpload()}
                     disabled={uploading || loading || !selectedFlavorId || !uploadFile}
-                    className="mt-6 w-full py-3 px-6 border-sketchy bg-white dark:bg-zinc-800 text-lg font-black shadow-hand hover:shadow-hand-hover hover:-translate-y-1 transition-all disabled:opacity-50 text-foreground flex items-center justify-center gap-2"
+                    className="mt-6 w-full py-3 px-6 border-sketchy bg-card-bg text-lg font-black shadow-hand hover:shadow-hand-hover hover:-translate-y-1 transition-all disabled:opacity-50 text-foreground flex items-center justify-center gap-2"
                   >
                     {uploading ? <Loader2 className="animate-spin" /> : <Sparkles size={18} />}
                     {uploading ? 'Drawing...' : 'Upload & Generate'}
@@ -398,7 +398,7 @@ export default function TestToolPage() {
               
               {selectedImageUrl && images.some(img => img.imageUrl === selectedImageUrl) ? (
                 <div className="flex-1 flex flex-col items-center justify-center space-y-4">
-                  <div className="border-sketchy bg-white p-2 shadow-hand transform rotate-2">
+                  <div className="border-sketchy bg-card-bg p-2 shadow-hand transform rotate-2">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img src={selectedImageUrl} alt="Gallery preview" className="max-h-48 rounded-sm object-contain" />
                   </div>
@@ -479,7 +479,7 @@ export default function TestToolPage() {
             <div className="mt-12 text-center">
               <button 
                 onClick={resetSelection}
-                className="inline-flex items-center gap-3 border-sketchy bg-white dark:bg-zinc-800 px-8 py-4 text-xl font-black shadow-hand hover:shadow-hand-hover hover:-translate-y-1 transition-all text-foreground"
+                className="inline-flex items-center gap-3 border-sketchy bg-card-bg px-8 py-4 text-xl font-black shadow-hand hover:shadow-hand-hover hover:-translate-y-1 transition-all text-foreground"
               >
                 <Upload size={24} strokeWidth={3} className="text-accent" />
                 START A NEW SKETCH

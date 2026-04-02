@@ -48,7 +48,7 @@ export function Sidebar() {
   return (
     <div className="flex h-full w-64 flex-col border-r-2 border-sketchy bg-warm-paper text-foreground">
       <div className="flex h-20 items-center justify-center border-b-2 border-sketchy bg-pastel-yellow/20">
-        <span className="text-xl font-bold tracking-tight px-4 py-1 border-sketchy bg-white dark:bg-zinc-800 transform -rotate-1">
+        <span className="text-xl font-bold tracking-tight px-4 py-1 border-sketchy bg-card-bg transform -rotate-1">
           PromptChain ✨
         </span>
       </div>
@@ -64,14 +64,14 @@ export function Sidebar() {
                 className={cn(
                   'group flex items-center px-3 py-3 text-sm font-bold border-sketchy-soft transition-all duration-200',
                   isActive
-                    ? 'bg-accent text-white shadow-hand translate-x-1'
-                    : 'bg-white dark:bg-zinc-800 text-gray-700 dark:text-gray-300 hover:bg-accent hover:text-white hover:shadow-hand hover:-translate-y-0.5'
+                    ? 'bg-accent text-white shadow-hand translate-x-1 border-sketchy'
+                    : 'bg-card-bg text-foreground/70 hover:bg-accent hover:text-white hover:shadow-hand hover:-translate-y-0.5'
                 )}
               >
                 <item.icon
                   className={cn(
                     'mr-3 h-5 w-5 flex-shrink-0 transition-colors',
-                    isActive ? 'text-white' : 'text-gray-500 group-hover:text-white'
+                    isActive ? 'text-white' : 'text-foreground/40 group-hover:text-white'
                   )}
                 />
                 {item.name}
@@ -84,7 +84,7 @@ export function Sidebar() {
       <div className="p-4 space-y-3 border-t-2 border-sketchy bg-pastel-blue/10">
         <button
           onClick={cycleTheme}
-          className="flex w-full items-center justify-between px-3 py-2 text-sm font-bold border-sketchy-soft bg-white dark:bg-zinc-800 hover:shadow-hand transition-all"
+          className="flex w-full items-center justify-between px-3 py-2 text-sm font-bold border-sketchy-soft bg-card-bg hover:shadow-hand transition-all"
         >
           <div className="flex items-center">
             {mounted && (theme === 'dark' ? <Moon className="mr-3 h-4 w-4" /> : <Sun className="mr-3 h-4 w-4 text-orange-400" />)}
@@ -95,7 +95,7 @@ export function Sidebar() {
 
         <button
           onClick={handleSignOut}
-          className="flex w-full items-center px-3 py-2 text-sm font-bold border-sketchy-soft bg-white dark:bg-zinc-800 text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 hover:shadow-hand transition-all"
+          className="flex w-full items-center px-3 py-2 text-sm font-bold border-sketchy-soft bg-card-bg text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 hover:shadow-hand transition-all"
         >
           <LogOut className="mr-3 h-4 w-4" />
           Sign Out

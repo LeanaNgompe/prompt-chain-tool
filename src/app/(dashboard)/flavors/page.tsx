@@ -111,9 +111,9 @@ export default function FlavorsPage() {
   }
 
   return (
-    <div className="bg-warm-paper min-h-screen p-8">
+    <div className="bg-warm-paper min-h-screen p-8 text-foreground">
       <div className="flex items-center justify-between mb-10">
-        <h1 className="text-3xl font-black flex items-center underline decoration-accent decoration-wavy underline-offset-8 text-black dark:text-white">
+        <h1 className="text-3xl font-black flex items-center underline decoration-accent decoration-wavy underline-offset-8">
           <div className="p-2 border-sketchy bg-pastel-purple/30 mr-4 shadow-hand">
             <MessageSquareQuote className="h-8 w-8 text-accent" />
           </div>
@@ -132,54 +132,54 @@ export default function FlavorsPage() {
         </button>
       </div>
 
-      <div className="border-sketchy bg-white dark:bg-zinc-100 shadow-hand overflow-hidden transform rotate-0.5">
+      <div className="border-sketchy bg-card-bg shadow-hand overflow-hidden transform rotate-0.5">
         <table className="min-w-full divide-y-2 divide-sketchy">
-          <thead className="bg-pastel-blue/30">
+          <thead className="bg-pastel-blue/30 dark:bg-blue-900/20">
             <tr>
-              <th className="py-4 pl-6 pr-3 text-left text-lg font-black uppercase tracking-wider text-black">Slug</th>
-              <th className="px-3 py-4 text-left text-lg font-black uppercase tracking-wider text-black">Description</th>
+              <th className="py-4 pl-6 pr-3 text-left text-lg font-black uppercase tracking-wider">Slug</th>
+              <th className="px-3 py-4 text-left text-lg font-black uppercase tracking-wider">Description</th>
               <th className="relative py-4 pl-3 pr-6">
                 <span className="sr-only">Actions</span>
               </th>
             </tr>
           </thead>
-          <tbody className="divide-y-2 divide-sketchy bg-white">
+          <tbody className="divide-y-2 divide-sketchy bg-card-bg">
             {loading ? (
               <tr>
-                <td colSpan={3} className="py-10 text-center text-xl font-bold italic text-black">Doodling...</td>
+                <td colSpan={3} className="py-10 text-center text-xl font-bold italic opacity-70">Doodling...</td>
               </tr>
             ) : flavors.length === 0 ? (
               <tr>
-                <td colSpan={3} className="py-10 text-center text-xl font-bold italic text-black">No flavors found in the notebook.</td>
+                <td colSpan={3} className="py-10 text-center text-xl font-bold italic opacity-70">No flavors found in the notebook.</td>
               </tr>
             ) : (
               flavors.map((flavor) => (
-                <tr key={flavor.id} className="hover:bg-pastel-yellow/20 transition-colors">
-                  <td className="whitespace-nowrap py-5 pl-6 pr-3 text-lg font-black text-black">
-                    <span className="px-2 py-1 border-sketchy-soft bg-pastel-yellow/30">{flavor.slug}</span>
+                <tr key={flavor.id} className="hover:bg-pastel-yellow/20 dark:hover:bg-yellow-900/10 transition-colors">
+                  <td className="whitespace-nowrap py-5 pl-6 pr-3 text-lg font-black">
+                    <span className="px-2 py-1 border-sketchy-soft bg-pastel-yellow/30 dark:bg-yellow-900/30">{flavor.slug}</span>
                   </td>
-                  <td className="px-3 py-5 text-lg font-bold text-black">
+                  <td className="px-3 py-5 text-lg font-bold">
                     {flavor.description}
                   </td>
                   <td className="relative whitespace-nowrap py-5 pl-3 pr-6 text-right font-bold">
                     <div className="flex justify-end space-x-4">
                       <Link
                         href={`/flavors/${flavor.id}`}
-                        className="p-2 border-sketchy-soft bg-white text-accent hover:shadow-hand transition-all"
+                        className="p-2 border-sketchy-soft bg-card-bg text-accent hover:shadow-hand transition-all"
                         title="View Details"
                       >
                         <ExternalLink className="h-5 w-5" strokeWidth={2.5} />
                       </Link>
                       <button
                         onClick={() => openEditModal(flavor)}
-                        className="p-2 border-sketchy-soft bg-white text-gray-700 hover:text-accent hover:shadow-hand transition-all"
+                        className="p-2 border-sketchy-soft bg-card-bg text-foreground/70 hover:text-accent hover:shadow-hand transition-all"
                         title="Edit"
                       >
                         <Pencil className="h-5 w-5" strokeWidth={2.5} />
                       </button>
                       <button
                         onClick={() => handleDelete(flavor.id)}
-                        className="p-2 border-sketchy-soft bg-white text-red-500 hover:text-red-700 hover:shadow-hand transition-all"
+                        className="p-2 border-sketchy-soft bg-card-bg text-red-500 hover:text-red-700 hover:shadow-hand transition-all"
                         title="Delete"
                       >
                         <Trash2 className="h-5 w-5" strokeWidth={2.5} />
@@ -198,29 +198,29 @@ export default function FlavorsPage() {
           <div className="flex min-h-screen items-center justify-center p-4">
             <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-sm transition-opacity" onClick={() => setIsModalOpen(false)}></div>
 
-            <div className="relative transform border-sketchy bg-white p-8 shadow-hand transition-all sm:w-full sm:max-w-lg rotate-1">
+            <div className="relative transform border-sketchy bg-card-bg p-8 shadow-hand transition-all sm:w-full sm:max-w-lg rotate-1">
               <form onSubmit={handleCreateOrUpdate}>
-                <h3 className="text-2xl font-black mb-6 underline decoration-accent decoration-wavy text-black">
+                <h3 className="text-2xl font-black mb-6 underline decoration-accent decoration-wavy">
                   {editingFlavor ? 'Edit Flavor' : 'New Flavor'}
                 </h3>
                 <div className="space-y-6">
                   <div>
-                    <label htmlFor="slug" className="block text-lg font-black mb-2 text-black">Slug</label>
+                    <label htmlFor="slug" className="block text-lg font-black mb-2">Slug</label>
                     <input
                       type="text"
                       required
                       value={newFlavor.slug}
                       onChange={(e) => setNewFlavor({ ...newFlavor, slug: e.target.value })}
-                      className="block w-full border-sketchy-soft bg-pastel-yellow/10 p-3 text-lg font-bold focus:ring-accent focus:border-accent text-black"
+                      className="block w-full border-sketchy-soft bg-pastel-yellow/10 dark:bg-zinc-800/50 p-3 text-lg font-bold focus:ring-accent focus:border-accent text-foreground"
                     />
                   </div>
                   <div>
-                    <label htmlFor="description" className="block text-lg font-black mb-2 text-black">Description</label>
+                    <label htmlFor="description" className="block text-lg font-black mb-2">Description</label>
                     <textarea
                       rows={3}
                       value={newFlavor.description}
                       onChange={(e) => setNewFlavor({ ...newFlavor, description: e.target.value })}
-                      className="block w-full border-sketchy-soft bg-pastel-blue/10 p-3 text-lg font-bold focus:ring-accent focus:border-accent text-black"
+                      className="block w-full border-sketchy-soft bg-pastel-blue/10 dark:bg-zinc-800/50 p-3 text-lg font-bold focus:ring-accent focus:border-accent text-foreground"
                     />
                   </div>
                 </div>
@@ -234,7 +234,7 @@ export default function FlavorsPage() {
                   <button
                     type="button"
                     onClick={() => setIsModalOpen(false)}
-                    className="w-full sm:w-auto border-sketchy bg-white px-8 py-3 text-lg font-black text-black opacity-70 shadow-hand hover:shadow-hand-hover transition-all"
+                    className="w-full sm:w-auto border-sketchy bg-card-bg px-8 py-3 text-lg font-black opacity-70 shadow-hand hover:shadow-hand-hover transition-all"
                   >
                     Cancel
                   </button>

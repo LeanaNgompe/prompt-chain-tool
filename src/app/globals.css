@@ -30,11 +30,11 @@
 
 .dark {
   /* Dark Mode - Muted Dark Palette (Reverted) */
-  --background: #1a1a1e;
-  --foreground: #ffffff;
-  --card-bg: #252529;
+  --background: #121214;
+  --foreground: #f4f4f5;
+  --card-bg: #1a1a1e;
   --accent: #818cf8;
-  --border-color: #ffffff;
+  --border-color: #3f3f46;
 }
 
 @layer base {
@@ -63,8 +63,9 @@
 
   .bg-warm-paper {
     background-color: var(--background);
-    background-image: radial-gradient(#4a444011 1px, transparent 0);
+    background-image: radial-gradient(var(--foreground) 1px, transparent 0);
     background-size: 24px 24px;
+    background-attachment: fixed;
   }
 }
 
