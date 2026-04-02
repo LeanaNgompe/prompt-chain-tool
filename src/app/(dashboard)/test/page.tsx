@@ -232,20 +232,21 @@ export default function TestToolPage() {
     return results
   }
 
-  const runGeneration = async () => {
+  const runGeneration = async (forcedId?: string) => {
     setLoading(true)
     setResults(null)
     setError(null)
 
     try {
-      if (!selectedImageId) {
+      const idToUse = forcedId || selectedImageId
+      if (!idToUse) {
         throw new Error('Please select or upload an image.')
       }
-      if (!UUID_REGEX.test(selectedImageId.trim())) {
+      if (!UUID_REGEX.test(idToUse.trim())) {
         throw new Error('Selected image id must be a valid UUID.')
       }
 
-      const data = await generateFromImageId(selectedImageId.trim(), selectedFlavorId)
+      const data = await generateFromImageId(idToUse.trim(), selectedFlavorId)
       const captions = extractCaptions(data)
       if (captions.length === 0) {
         throw new Error('No captions were returned by the generation pipeline')
@@ -290,14 +291,15 @@ export default function TestToolPage() {
         throw new Error('Upload succeeded but imageId/imageUrl were missing from the response.')
       }
 
-      setSelectedImageId(String(data.imageId))
+      const newId = String(data.imageId)
+      setSelectedImageId(newId)
       setSelectedImageUrl(String(data.imageUrl))
 
       // Clear upload file so it shows the selected/uploaded view
       setUploadFile(null)
 
-      // Generate captions immediately after upload/registration.
-      await runGeneration()
+      // Generate captions immediately after upload using the fresh ID
+      await runGeneration(newId)
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Upload failed.')
     } finally {
