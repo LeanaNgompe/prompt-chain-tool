@@ -72,7 +72,7 @@ export default function FlavorsPage() {
             // Prepare new steps
             const newSteps = originalSteps.map(step => {
               // eslint-disable-next-line @typescript-eslint/no-unused-vars
-              const { id, ...stepData } = step
+              const { id, ...stepData } = step as any
               return {
                 ...stepData,
                 humor_flavor_id: createdFlavor.id
