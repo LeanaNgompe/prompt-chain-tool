@@ -157,7 +157,18 @@ export default function FlavorsPage() {
   const openDuplicateModal = (flavor: HumorFlavor) => {
     setEditingFlavor(null)
     setDuplicatingFlavor(flavor)
-    setNewFlavor({ slug: `${flavor.slug}-copy`, description: flavor.description || '' })
+    
+    // Generate a unique slug
+    let baseSlug = `${flavor.slug}-copy`
+    let counter = 1
+    let uniqueSlug = baseSlug
+    
+    while (flavors.some(f => f.slug === uniqueSlug)) {
+      counter++
+      uniqueSlug = `${baseSlug}-${counter}`
+    }
+    
+    setNewFlavor({ slug: uniqueSlug, description: flavor.description || '' })
     setIsModalOpen(true)
   }
 
