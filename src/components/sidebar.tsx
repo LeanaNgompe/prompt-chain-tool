@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { cn } from '@/lib/utils'
-import { LayoutDashboard, FlaskConical, MessageSquareQuote, LogOut, Sun, Moon } from 'lucide-react'
+import { LayoutDashboard, FlaskConical, MessageSquareQuote, LogOut, Sun, Moon, X } from 'lucide-react'
 import { createClient } from '@/utils/supabase/client'
 import { useRouter } from 'next/navigation'
 import { useTheme } from 'next-themes'
@@ -15,7 +15,7 @@ const navigation = [
   { name: 'Test Tool', href: '/test', icon: FlaskConical },
 ]
 
-export function Sidebar() {
+export function Sidebar({ onClose }: { onClose?: () => void }) {
   const pathname = usePathname()
   const supabase = createClient()
   const router = useRouter()
@@ -46,11 +46,19 @@ export function Sidebar() {
   const themeLabel = mounted ? (theme === 'system' ? 'System' : theme === 'dark' ? 'Dark' : 'Light') : 'Theme'
 
   return (
-    <div className="flex h-full w-64 flex-col border-r-2 border-sketchy bg-warm-paper text-foreground">
-      <div className="flex h-20 items-center justify-center border-b-2 border-sketchy bg-pastel-yellow/20">
+    <div className="flex h-full w-full flex-col border-r-2 border-sketchy bg-warm-paper text-foreground">
+      <div className="flex h-20 items-center justify-between px-6 border-b-2 border-sketchy bg-pastel-yellow/20">
         <span className="text-xl font-bold tracking-tight px-4 py-1 border-sketchy bg-card-bg transform -rotate-1">
           PromptChain ✨
         </span>
+        {onClose && (
+          <button
+            onClick={onClose}
+            className="p-1 border-sketchy bg-card-bg shadow-hand lg:hidden"
+          >
+            <X className="h-5 w-5" strokeWidth={3} />
+          </button>
+        )}
       </div>
       
       <div className="flex flex-1 flex-col overflow-y-auto pt-8 pb-4 px-4">
@@ -61,6 +69,7 @@ export function Sidebar() {
               <Link
                 key={item.name}
                 href={item.href}
+                onClick={onClose}
                 className={cn(
                   'group flex items-center px-3 py-3 text-sm font-bold border-sketchy-soft transition-all duration-200',
                   isActive

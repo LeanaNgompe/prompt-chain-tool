@@ -173,11 +173,11 @@ export default function FlavorsPage() {
   }
 
   return (
-    <div className="bg-warm-paper min-h-screen p-8 text-foreground">
-      <div className="flex items-center justify-between mb-10">
-        <h1 className="text-3xl font-black flex items-center underline decoration-accent decoration-wavy underline-offset-8">
-          <div className="p-2 border-sketchy bg-pastel-purple/30 mr-4 shadow-hand">
-            <MessageSquareQuote className="h-8 w-8 text-accent" />
+    <div className="bg-warm-paper min-h-screen p-4 md:p-8 text-foreground">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-8 md:mb-10 gap-4">
+        <h1 className="text-2xl md:text-3xl font-black flex items-center underline decoration-accent decoration-wavy underline-offset-8">
+          <div className="p-2 border-sketchy bg-pastel-purple/30 mr-3 md:mr-4 shadow-hand">
+            <MessageSquareQuote className="h-6 w-6 md:h-8 md:w-8 text-accent" />
           </div>
           Humor Flavors
         </h1>
@@ -188,20 +188,20 @@ export default function FlavorsPage() {
             setNewFlavor({ slug: '', description: '' })
             setIsModalOpen(true)
           }}
-          className="inline-flex items-center border-sketchy bg-accent px-6 py-3 text-lg font-black text-white shadow-hand hover:shadow-hand-hover hover:-translate-y-1 transition-all"
+          className="inline-flex items-center justify-center border-sketchy bg-accent px-4 md:px-6 py-2 md:py-3 text-base md:text-lg font-black text-white shadow-hand hover:shadow-hand-hover hover:-translate-y-1 transition-all"
         >
-          <Plus className="-ml-1 mr-2 h-6 w-6" strokeWidth={3} />
+          <Plus className="-ml-1 mr-2 h-5 w-5 md:h-6 md:w-6" strokeWidth={3} />
           New Flavor
         </button>
       </div>
 
-      <div className="border-sketchy bg-card-bg shadow-hand overflow-hidden transform rotate-0.5">
+      <div className="border-sketchy bg-card-bg shadow-hand overflow-x-auto transform rotate-0.5">
         <table className="min-w-full divide-y-2 divide-sketchy">
           <thead className="bg-pastel-blue/30 dark:bg-blue-900/20">
             <tr>
-              <th className="py-4 pl-6 pr-3 text-left text-lg font-black uppercase tracking-wider">Slug</th>
-              <th className="px-3 py-4 text-left text-lg font-black uppercase tracking-wider">Description</th>
-              <th className="relative py-4 pl-3 pr-6">
+              <th className="py-3 md:py-4 pl-4 md:pl-6 pr-3 text-left text-base md:text-lg font-black uppercase tracking-wider">Slug</th>
+              <th className="px-3 py-3 md:py-4 text-left text-base md:text-lg font-black uppercase tracking-wider">Description</th>
+              <th className="relative py-3 md:py-4 pl-3 pr-4 md:pr-6">
                 <span className="sr-only">Actions</span>
               </th>
             </tr>
@@ -209,50 +209,52 @@ export default function FlavorsPage() {
           <tbody className="divide-y-2 divide-sketchy bg-card-bg">
             {loading ? (
               <tr>
-                <td colSpan={3} className="py-10 text-center text-xl font-bold italic opacity-70">Doodling...</td>
+                <td colSpan={3} className="py-10 text-center text-lg md:text-xl font-bold italic opacity-70">Doodling...</td>
               </tr>
             ) : flavors.length === 0 ? (
               <tr>
-                <td colSpan={3} className="py-10 text-center text-xl font-bold italic opacity-70">No flavors found in the notebook.</td>
+                <td colSpan={3} className="py-10 text-center text-lg md:text-xl font-bold italic opacity-70">No flavors found in the notebook.</td>
               </tr>
             ) : (
               flavors.map((flavor) => (
                 <tr key={flavor.id} className="hover:bg-pastel-yellow/20 dark:hover:bg-yellow-900/10 transition-colors">
-                  <td className="whitespace-nowrap py-5 pl-6 pr-3 text-lg font-black">
+                  <td className="whitespace-nowrap py-4 md:py-5 pl-4 md:pl-6 pr-3 text-base md:text-lg font-black">
                     <span className="px-2 py-1 border-sketchy-soft bg-pastel-yellow/30 dark:bg-yellow-900/30">{flavor.slug}</span>
                   </td>
-                  <td className="px-3 py-5 text-lg font-bold">
-                    {flavor.description}
+                  <td className="px-3 py-4 md:py-5 text-base md:text-lg font-bold">
+                    <div className="max-w-xs md:max-w-md lg:max-w-xl truncate">
+                      {flavor.description}
+                    </div>
                   </td>
-                  <td className="relative whitespace-nowrap py-5 pl-3 pr-6 text-right font-bold">
-                    <div className="flex justify-end space-x-4">
+                  <td className="relative whitespace-nowrap py-4 md:py-5 pl-3 pr-4 md:pr-6 text-right font-bold">
+                    <div className="flex justify-end space-x-2 md:space-x-4">
                       <Link
                         href={`/flavors/${flavor.id}`}
-                        className="p-2 border-sketchy-soft bg-card-bg text-accent hover:shadow-hand transition-all"
+                        className="p-1.5 md:p-2 border-sketchy-soft bg-card-bg text-accent hover:shadow-hand transition-all"
                         title="View Details"
                       >
-                        <ExternalLink className="h-5 w-5" strokeWidth={2.5} />
+                        <ExternalLink className="h-4 w-4 md:h-5 md:w-5" strokeWidth={2.5} />
                       </Link>
                       <button
                         onClick={() => openDuplicateModal(flavor)}
-                        className="p-2 border-sketchy-soft bg-card-bg text-pastel-purple hover:text-accent hover:shadow-hand transition-all"
+                        className="p-1.5 md:p-2 border-sketchy-soft bg-card-bg text-pastel-purple hover:text-accent hover:shadow-hand transition-all"
                         title="Duplicate"
                       >
-                        <Copy className="h-5 w-5" strokeWidth={2.5} />
+                        <Copy className="h-4 w-4 md:h-5 md:w-5" strokeWidth={2.5} />
                       </button>
                       <button
                         onClick={() => openEditModal(flavor)}
-                        className="p-2 border-sketchy-soft bg-card-bg text-foreground/70 hover:text-accent hover:shadow-hand transition-all"
+                        className="p-1.5 md:p-2 border-sketchy-soft bg-card-bg text-foreground/70 hover:text-accent hover:shadow-hand transition-all"
                         title="Edit"
                       >
-                        <Pencil className="h-5 w-5" strokeWidth={2.5} />
+                        <Pencil className="h-4 w-4 md:h-5 md:w-5" strokeWidth={2.5} />
                       </button>
                       <button
                         onClick={() => handleDelete(flavor.id)}
-                        className="p-2 border-sketchy-soft bg-card-bg text-red-500 hover:text-red-700 hover:shadow-hand transition-all"
+                        className="p-1.5 md:p-2 border-sketchy-soft bg-card-bg text-red-500 hover:text-red-700 hover:shadow-hand transition-all"
                         title="Delete"
                       >
-                        <Trash2 className="h-5 w-5" strokeWidth={2.5} />
+                        <Trash2 className="h-4 w-4 md:h-5 md:w-5" strokeWidth={2.5} />
                       </button>
                     </div>
                   </td>

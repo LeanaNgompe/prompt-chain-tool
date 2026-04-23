@@ -314,24 +314,24 @@ export default function TestToolPage() {
 
   return (
     <div className="bg-warm-paper min-h-screen p-4 md:p-8 text-foreground font-sans">
-      <h1 className="text-3xl font-black flex items-center mb-10 text-foreground underline decoration-accent decoration-wavy underline-offset-8">
-        <div className="p-2 border-sketchy bg-pastel-purple/30 mr-4 shadow-hand">
-          <FlaskConical className="h-8 w-8 text-accent" />
+      <h1 className="text-2xl md:text-3xl font-black flex items-center mb-8 md:mb-10 text-foreground underline decoration-accent decoration-wavy underline-offset-8">
+        <div className="p-2 border-sketchy bg-pastel-purple/30 mr-3 md:mr-4 shadow-hand">
+          <FlaskConical className="h-6 w-6 md:h-8 md:w-8 text-accent" />
         </div>
-        Test Tool <span className="ml-2 font-normal opacity-50 italic decoration-transparent text-xl">(Caption Generation)</span>
+        Test Tool <span className="ml-2 font-normal opacity-50 italic decoration-transparent text-lg md:text-xl hidden sm:inline">(Caption Generation)</span>
       </h1>
 
-      <div className="max-w-5xl space-y-10">
-        <form onSubmit={handleGenerate} className="space-y-8 border-sketchy bg-card-bg p-8 shadow-hand text-foreground">
+      <div className="max-w-5xl space-y-8 md:space-y-10">
+        <form onSubmit={handleGenerate} className="space-y-6 md:space-y-8 border-sketchy bg-card-bg p-6 md:p-8 shadow-hand text-foreground">
           <div>
-            <label htmlFor="flavor" className="block text-xl font-black mb-2 underline decoration-pastel-yellow decoration-4 text-foreground">
+            <label htmlFor="flavor" className="block text-lg md:text-xl font-black mb-2 underline decoration-pastel-yellow decoration-4 text-foreground">
               Step 1: Select Humor Flavor
             </label>
             <select
               id="flavor"
               value={selectedFlavorId}
               onChange={(e) => setSelectedFlavorId(e.target.value)}
-              className="mt-1 block w-full border-sketchy-soft bg-pastel-yellow/20 dark:bg-zinc-800 p-4 text-xl font-bold focus:ring-accent focus:border-accent text-foreground"
+              className="mt-1 block w-full border-sketchy-soft bg-pastel-yellow/20 dark:bg-zinc-800 p-3 md:p-4 text-lg md:text-xl font-bold focus:ring-accent focus:border-accent text-foreground"
             >
               {flavors.map((f) => (
                 <option key={f.id} value={f.id} className="bg-card-bg text-foreground">
@@ -341,15 +341,15 @@ export default function TestToolPage() {
             </select>
           </div>
 
-          <div className="grid grid-cols-1 gap-10 md:grid-cols-2">
-            <div className="border-sketchy-soft bg-pastel-blue/10 dark:bg-blue-900/10 p-6 transform rotate-1 shadow-hand text-foreground min-h-[350px] flex flex-col">
-              <h3 className="text-xl font-black mb-4 underline decoration-accent decoration-wavy text-foreground">A) Upload a new image</h3>
+          <div className="grid grid-cols-1 gap-8 md:gap-10 md:grid-cols-2">
+            <div className="border-sketchy-soft bg-pastel-blue/10 dark:bg-blue-900/10 p-5 md:p-6 transform rotate-1 shadow-hand text-foreground min-h-[300px] md:min-h-[350px] flex flex-col">
+              <h3 className="text-lg md:text-xl font-black mb-4 underline decoration-accent decoration-wavy text-foreground">A) Upload a new image</h3>
               
               {selectedImageUrl && !images.some(img => img.imageUrl === selectedImageUrl) ? (
                 <div className="flex-1 flex flex-col items-center justify-center space-y-4">
                   <div className="border-sketchy bg-card-bg p-2 shadow-hand transform -rotate-2">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={selectedImageUrl} alt="Uploaded preview" className="max-h-48 rounded-sm object-contain" />
+                    <img src={selectedImageUrl} alt="Uploaded preview" className="max-h-32 md:max-h-48 rounded-sm object-contain" />
                   </div>
                   <button 
                     type="button" 
@@ -361,16 +361,16 @@ export default function TestToolPage() {
                 </div>
               ) : (
                 <div className="flex-1 flex flex-col">
-                  <div className="mt-3 flex-1 flex items-center justify-center border-2 border-dashed border-sketchy bg-white/50 dark:bg-black/20 p-4 mb-4">
+                  <div className="mt-2 flex-1 flex items-center justify-center border-2 border-dashed border-sketchy bg-white/50 dark:bg-black/20 p-4 mb-4">
                     {uploadFile ? (
                       <div className="text-center">
-                        <p className="font-bold text-accent">{uploadFile.name}</p>
+                        <p className="font-bold text-accent break-all">{uploadFile.name}</p>
                         <p className="text-xs opacity-60">Ready to sketch!</p>
                       </div>
                     ) : (
                       <div className="text-center opacity-40">
-                        <Upload className="mx-auto h-10 w-10 mb-2" />
-                        <p className="font-bold uppercase tracking-widest text-xs">Drop your doodle here</p>
+                        <Upload className="mx-auto h-8 w-8 md:h-10 md:w-10 mb-2" />
+                        <p className="font-bold uppercase tracking-widest text-[10px] md:text-xs">Drop your doodle here</p>
                       </div>
                     )}
                   </div>
@@ -378,29 +378,29 @@ export default function TestToolPage() {
                     type="file"
                     accept="image/*"
                     onChange={(e) => setUploadFile(e.target.files?.[0] || null)}
-                    className="block w-full text-sm file:mr-4 file:py-2 file:px-4 file:border-sketchy file:bg-accent file:text-white file:font-bold hover:file:bg-indigo-700 cursor-pointer text-foreground"
+                    className="block w-full text-sm file:mr-2 md:file:mr-4 file:py-1.5 md:file:py-2 file:px-3 md:file:px-4 file:border-sketchy file:bg-accent file:text-white file:font-bold hover:file:bg-indigo-700 cursor-pointer text-foreground"
                   />
                   <button
                     type="button"
                     onClick={() => void handleUpload()}
                     disabled={uploading || loading || !selectedFlavorId || !uploadFile}
-                    className="mt-6 w-full py-3 px-6 border-sketchy bg-card-bg text-lg font-black shadow-hand hover:shadow-hand-hover hover:-translate-y-1 transition-all disabled:opacity-50 text-foreground flex items-center justify-center gap-2"
+                    className="mt-4 md:mt-6 w-full py-2.5 md:py-3 px-4 md:px-6 border-sketchy bg-card-bg text-base md:text-lg font-black shadow-hand hover:shadow-hand-hover hover:-translate-y-1 transition-all disabled:opacity-50 text-foreground flex items-center justify-center gap-2"
                   >
-                    {uploading ? <Loader2 className="animate-spin" /> : <Sparkles size={18} />}
+                    {uploading ? <Loader2 className="animate-spin h-5 w-5" /> : <Sparkles size={18} />}
                     {uploading ? 'Drawing...' : 'Upload & Generate'}
                   </button>
                 </div>
               )}
             </div>
 
-            <div className="border-sketchy-soft bg-pastel-pink/10 dark:bg-pink-900/10 p-6 transform -rotate-1 shadow-hand text-foreground min-h-[350px] flex flex-col">
-              <h3 className="text-xl font-black mb-4 underline decoration-pink-400 decoration-wavy text-foreground">B) Select from gallery</h3>
+            <div className="border-sketchy-soft bg-pastel-pink/10 dark:bg-pink-900/10 p-5 md:p-6 transform -rotate-1 shadow-hand text-foreground min-h-[300px] md:min-h-[350px] flex flex-col">
+              <h3 className="text-lg md:text-xl font-black mb-4 underline decoration-pink-400 decoration-wavy text-foreground">B) Select from gallery</h3>
               
               {selectedImageUrl && images.some(img => img.imageUrl === selectedImageUrl) ? (
                 <div className="flex-1 flex flex-col items-center justify-center space-y-4">
                   <div className="border-sketchy bg-card-bg p-2 shadow-hand transform rotate-2">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={selectedImageUrl} alt="Gallery preview" className="max-h-48 rounded-sm object-contain" />
+                    <img src={selectedImageUrl} alt="Gallery preview" className="max-h-32 md:max-h-48 rounded-sm object-contain" />
                   </div>
                   <button 
                     type="button" 
@@ -412,11 +412,11 @@ export default function TestToolPage() {
                 </div>
               ) : (
                 <div className="flex-1 flex flex-col">
-                  <div className="mt-3 flex-1 max-h-64 overflow-auto custom-scrollbar bg-white/50 dark:bg-black/20 p-2 border-sketchy-soft">
+                  <div className="mt-2 flex-1 max-h-48 md:max-h-64 overflow-auto custom-scrollbar bg-white/50 dark:bg-black/20 p-2 border-sketchy-soft">
                     {images.length === 0 ? (
                       <p className="text-sm opacity-60 italic p-4 text-foreground text-center">The gallery is empty...</p>
                     ) : (
-                      <div className="grid grid-cols-3 gap-4">
+                      <div className="grid grid-cols-3 gap-2 md:gap-4">
                         {images.map((img) => (
                           <button
                             key={img.id}
@@ -425,17 +425,17 @@ export default function TestToolPage() {
                               setSelectedImageId(img.id)
                               setSelectedImageUrl(img.imageUrl)
                             }}
-                            className="relative overflow-hidden border-sketchy-soft p-1 transition-all shadow-sm grayscale hover:grayscale-0 border-gray-200 dark:border-gray-700 hover:scale-105"
+                            className="relative overflow-hidden border-sketchy-soft p-0.5 md:p-1 transition-all shadow-sm grayscale hover:grayscale-0 border-gray-200 dark:border-gray-700 hover:scale-105"
                           >
                             {/* eslint-disable-next-line @next/next/no-img-element */}
-                            <img src={img.thumbnailUrl} alt="" className="h-20 w-full object-cover" />
+                            <img src={img.thumbnailUrl} alt="" className="h-16 md:h-20 w-full object-cover" />
                           </button>
                         ))}
                       </div>
                     )}
                   </div>
-                  <div className="mt-4">
-                    <p className="text-xs opacity-60 italic text-foreground text-center">Pick a doodle above to blow it up!</p>
+                  <div className="mt-3">
+                    <p className="text-[10px] md:text-xs opacity-60 italic text-foreground text-center">Pick a doodle above to blow it up!</p>
                   </div>
                 </div>
               )}
@@ -445,43 +445,43 @@ export default function TestToolPage() {
           <button
             type="submit"
             disabled={loading || uploading || !selectedFlavorId || !selectedImageId}
-            className="w-full py-6 px-8 border-sketchy bg-accent hover:bg-indigo-600 dark:hover:bg-indigo-500 text-white text-2xl font-black shadow-hand hover:shadow-hand-hover hover:-translate-y-1 transition-all disabled:opacity-50 flex justify-center items-center gap-4 group"
+            className="w-full py-4 md:py-6 px-6 md:px-8 border-sketchy bg-accent hover:bg-indigo-600 dark:hover:bg-indigo-500 text-white text-xl md:text-2xl font-black shadow-hand hover:shadow-hand-hover hover:-translate-y-1 transition-all disabled:opacity-50 flex justify-center items-center gap-4 group"
           >
             {loading ? (
               <>
-                <Loader2 className="h-8 w-8 animate-spin" />
+                <Loader2 className="h-6 w-6 md:h-8 md:w-8 animate-spin" />
                 <span>THINKING...</span>
               </>
             ) : (
               <>
-                <Sparkles className="h-8 w-8 group-hover:animate-bounce" />
+                <Sparkles className="h-6 w-6 md:h-8 md:w-8 group-hover:animate-bounce" />
                 <span className="tracking-widest uppercase">Generate Captions</span>
-                <Sparkles className="h-8 w-8 group-hover:animate-bounce" />
+                <Sparkles className="h-6 w-6 md:h-8 md:w-8 group-hover:animate-bounce" />
               </>
             )}
           </button>
         </form>
 
         {error && (
-          <div className="border-sketchy bg-red-50 dark:bg-red-950/30 p-6 transform -rotate-1 shadow-hand border-red-500 text-foreground">
-            <div className="text-lg text-red-700 dark:text-red-400 font-black">Oops! {error}</div>
+          <div className="border-sketchy bg-red-50 dark:bg-red-950/30 p-5 md:p-6 transform -rotate-1 shadow-hand border-red-500 text-foreground">
+            <div className="text-base md:text-lg text-red-700 dark:text-red-400 font-black">Oops! {error}</div>
           </div>
         )}
 
         {results !== null && (
-          <div className="mt-16 animate-in fade-in slide-in-from-bottom-8 duration-700">
-            <h2 className="text-3xl font-black mb-8 flex items-center text-foreground">
-              <span className="p-3 bg-accent/20 border-sketchy mr-4 shadow-hand transform -rotate-3 text-foreground">📝</span>
+          <div className="mt-12 md:mt-16 animate-in fade-in slide-in-from-bottom-8 duration-700">
+            <h2 className="text-2xl md:text-3xl font-black mb-6 md:mb-8 flex items-center text-foreground">
+              <span className="p-2 md:p-3 bg-accent/20 border-sketchy mr-3 md:mr-4 shadow-hand transform -rotate-3 text-foreground">📝</span>
               Generated Captions
             </h2>
             <CaptionList captions={results} />
             
-            <div className="mt-12 text-center">
+            <div className="mt-8 md:mt-12 text-center">
               <button 
                 onClick={resetSelection}
-                className="inline-flex items-center gap-3 border-sketchy bg-card-bg px-8 py-4 text-xl font-black shadow-hand hover:shadow-hand-hover hover:-translate-y-1 transition-all text-foreground"
+                className="inline-flex items-center gap-2 md:gap-3 border-sketchy bg-card-bg px-6 md:px-8 py-3 md:py-4 text-lg md:text-xl font-black shadow-hand hover:shadow-hand-hover hover:-translate-y-1 transition-all text-foreground"
               >
-                <Upload size={24} strokeWidth={3} className="text-accent" />
+                <Upload strokeWidth={3} className="text-accent h-5 w-5 md:h-6 md:w-6" />
                 START A NEW SKETCH
               </button>
             </div>
